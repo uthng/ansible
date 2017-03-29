@@ -1,0 +1,15 @@
+---
+# defaults file for u.docker.nginx
+
+nginx_docker_commands: False
+
+# NGNIX CONTAINER DOCKER SETTINGS
+nginx_docker_name: "nginx"
+nginx_docker_image: "nginx:1.10"
+nginx_docker_detach: True
+
+nginx_docker_ports:
+  - 8080:80
+
+nginx_docker_volumes: []
+nginx_docker_environment: {}

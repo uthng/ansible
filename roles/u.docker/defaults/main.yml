@@ -1,0 +1,19 @@
+---
+# defaults file for u.docker
+docker_distribution: '{{ ansible_distribution | lower() }}'
+docker_release: '{{ ansible_distribution_release | lower() }}'
+docker_distribution_release: '{{ docker_distribution + "-" + docker_release }}'
+
+docker_install_engine: True
+docker_install_compose: True
+
+# URL for repository or download
+docker_debian_repo_url: "deb https://apt.dockerproject.org/repo {{ docker_distribution_release}} main"
+docker_compose_dl_url: "https://github.com/docker/compose/releases/download/1.9.0"
+
+# Proxy configuration
+docker_http_proxy: ""
+docker_https_proxy: ""
+docker_no_proxy: ""
+docker_engine_configure_proxy: "{% if (((docker_http_proxy is defined) and (docker_http_proxy != '')) or ((docker_https_proxy is defined) and (docker_https_proxy != ''))) %}True{% else %}False{% endif %}"
+

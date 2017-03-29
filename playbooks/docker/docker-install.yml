@@ -1,0 +1,8 @@
+# vim:ft=ansible:
+
+- name: Install docker engin and docker compose
+  hosts: "{{ hosts }}"
+  user: root
+  become: yes
+  roles:
+    - { role: u.docker }

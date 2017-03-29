@@ -1,0 +1,18 @@
+---
+# tasks file for u.docker.nginx
+
+# Launch nginx doncker container
+- name: "Nginx | Launch docker container"
+  docker_container:
+    name: "{{ nginx_docker_name }}"
+    image: "{{  nginx_docker_image }}"
+    state: started
+    restart_policy: always
+    ports: "{{ nginx_docker_ports | default(omit) }}"
+    volumes: "{{ nginx_docker_volumes | default(omit) }}"
+    env: "{{ nginx_docker_environment | default(omit) }}"
+  tags:
+    - nginx-container-run
+
+- include: "docker_commands.yml"
+  when: "{{ nginx_docker_commands | bool }}"

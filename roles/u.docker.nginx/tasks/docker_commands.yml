@@ -1,0 +1,29 @@
+# Remove nginx docker container
+- name: "Nginx | Remove docker container"
+  docker_container:
+    name: "{{ ngnix_docker_name }}"
+    state: absent
+  tags:
+    - nginx-container-remove
+
+# Restart ngnix docker container
+- name: "Nginx | Restart docker container"
+  docker_container:
+    name: "{{ nginx_docker_name }}"
+    image: "{{  nginx_docker_image }}"
+    state: started
+    restart: yes
+    restart_policy: always
+    ports: "{{ nginx_docker_ports | default(omit) }}"
+    volumes: "{{ nginx_docker_volumes | default(omit) }}"
+    env: "{{ nginx_docker_environment | default(omit) }}"
+  tags:
+    - nginx-container-restart
+
+# Remove nginx docker image
+- name: "Nginx | Remove docker image"
+  docker_image:
+    name: "{{ nginx_docker_image }}"
+    state: absent
+  tags:
+    - nginx-image-remove

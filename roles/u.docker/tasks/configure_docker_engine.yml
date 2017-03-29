@@ -1,0 +1,24 @@
+# Configure Proxy
+
+# Create systemd drop-in directory for docker service
+- name: "Configure Docker | Create systemd drop-in directory"
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: 755
+  when: docker_engine_configure_proxy
+  tags:
+    - docker-engine-configure
+
+- name: "Configure Docker | Copy template http-proxy.conf"
+  template:
+    src: http-proxy.conf.j2
+    dest: /etc/systemd/system/docker.service.d/http-proxy.conf
+    owner: root
+    group: root
+    mode: 0755
+  when: docker_engine_configure_proxy
+  notify:
+    - docker restart
+  tags:
+    - docker-engine-configure
