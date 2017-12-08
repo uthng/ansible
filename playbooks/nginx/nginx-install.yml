@@ -1,8 +1,0 @@
-# vim:ft=ansible:
-
-- name: Install NGINX docker
-  hosts: "{{ hosts }}"
-  user: vagrant
-  become: yes
-  roles:
-    - { role: u.docker.nginx }
