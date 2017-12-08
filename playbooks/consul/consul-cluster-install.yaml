@@ -1,0 +1,36 @@
+# vim:ft=ansible:
+- name: Prepare consul hosts
+  hosts: "{{ hosts }}"
+  user: root
+  become: yes
+  roles:
+    - { role: vpcorp.hostname }
+    - { role: vpcorp.hosts }
+  vars:
+    hostname_newfqdn: "{{ hostvars[inventory_hostname]['node_fqdn'] }}"
+    hostname_eth_interface: "eth1"
+    hosts_add_basic_ipv6: True
+    hosts_add_ansible_managed_hosts: True
+    hosts_network_interface: "eth1"
+
+
+- name: Install and configure docker engine and docker-compose
+  hosts: "{{ hosts }}"
+  become: yes
+  roles:
+    - { role: vpcorp.docker }
+  vars:
+    docker_install_engine: True
+    docker_install_compose: True
+    docker_configure_daemon: True
+    docker_daemon_options:
+      experimental: True
+
+- name: Install consul
+  hosts: "{{ hosts }}"
+  user: root
+  become: yes
+  roles:
+    - { role: vpcorp.docker-consul }
+  vars:
+    consul_iface: "eth1"

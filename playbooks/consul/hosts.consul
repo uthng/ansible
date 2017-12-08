@@ -1,0 +1,4 @@
+[consuls]
+consul-01 node_fqdn=consul-01 node_role=bootstrap ansible_ssh_host=localhost ansible_ssh_port=2222 ansible_ssh_user='vagrant' ansible_ssh_private_key_file='/data/Projets/VP/chrysalis/provisioning/ansible/playbooks/consul/.vagrant/machines/consul-01/virtualbox/private_key'
+consul-02 node_fqdn=consul-02 node_role=server ansible_ssh_host=localhost ansible_ssh_port=2200 ansible_ssh_user='vagrant' ansible_ssh_private_key_file='/data/Projets/VP/chrysalis/provisioning/ansible/playbooks/consul/.vagrant/machines/consul-02/virtualbox/private_key'
+consul-03 node_fqdn=consul-03 node_role=server ansible_ssh_host=localhost ansible_ssh_port=2201 ansible_ssh_user='vagrant' ansible_ssh_private_key_file='/data/Projets/VP/chrysalis/provisioning/ansible/playbooks/consul/.vagrant/machines/consul-03/virtualbox/private_key'
