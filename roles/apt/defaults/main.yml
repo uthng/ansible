@@ -1,0 +1,65 @@
+---
+# defaults file for apt
+apt_distribution: '{{ ansible_distribution | lower() }}'
+apt_release: '{{ ansible_distribution_release | lower() }}'
+apt_distribution_release: '{{ apt_distribution + "-" + apt_release }}'
+
+#apt_gpg_keys: '{{ apt_repositiories[apt_distribution_release] | map(attribute="gpg_key") | list | unique }}'
+
+apt_get_update: True
+apt_install_preference: True
+
+apt_repositiories:
+  'debian-jessie':
+    - type_archive: 'deb'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie'
+      components: [ 'main' ]
+
+    - type_archive: 'deb'
+      url_repository: 'http://security.debian.org/'
+      distribution: 'jessie/updates'
+      components: [ 'main' ]
+
+    - type_archive: 'deb'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie-updates'
+      components: [ 'main' ]
+
+    # Local repositories
+    - type_archive: 'deb'
+      url_repository: 'http://192.168.90.46:81/debian'
+      distribution: 'jessie'
+      components: [ 'main' ]
+    
+    - type_archive: 'deb'
+      url_repository: 'http://192.168.90.46:81/debian-security'
+      distribution: 'jessie/updates'
+      components: [ 'main', 'contrib', 'non-free' ]
+   
+    - type_archive: 'deb'
+      url_repository: 'http://192.168.90.46:81/idc'
+      distribution: 'idc-stable'
+      components: [ 'main' ]
+
+    #- type_archive: 'deb'
+      #url_repository: 'http://192.168.90.46:81/zabbix'
+      #distribution: 'jessie'
+      #components: [ 'main' ]
+
+apt_preferences:
+  'debian-jessie':
+    - explanation: 'iDeviceCloud stable packages should be the most preferred'
+      package: '*'
+      pin: 'release o=iDeviceCloud, l=idc-stable'
+      pin_priority: 950
+
+    - explanation: 'Local mirrors'
+      package: '*'
+      pin: "origin '192.168.90.46:81'"
+      pin_priority: 800
+
+    - explanation: 'iDeviceCloud testing should never be preferred'
+      package: '*'
+      pin: 'release o=iDeviceCloud, l=idc-testing'
+      pin_priority: -100

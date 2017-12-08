@@ -1,0 +1,29 @@
+---
+- name: "Debian | Install repository Debian"
+  apt_repository: repo="{{ zabbix_agent_repo_url }}"
+                  state=present
+  when: ansible_distribution == "Debian" and zabbix_agent_repo
+  tags:
+    - install
+
+#- name: "Debian | Install repository Debian"
+#  apt_repository: repo="deb-src http://repo.zabbix.com/zabbix/{{ zabbix_agent_version }}/debian/ {{ ansible_distribution_release }} main"
+#                  state=present
+#  when: ansible_distribution == "Debian"
+#  tags:
+#    - install
+
+- name: "Debian | Install gpg key"
+  apt_key: id=79EA5ED4
+           url=http://repo.zabbix.com/zabbix-official-repo.key
+  when: zabbix_agent_repo and zabbix_agent_repo_key
+  tags:
+    - install
+
+- name: "Debian | Install zabbix-agent"
+  apt: pkg=zabbix-agent
+       state=present
+       update_cache=yes
+       allow_unauthenticated=yes
+  tags:
+    - install

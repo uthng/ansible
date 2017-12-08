@@ -1,0 +1,14 @@
+---
+# tasks file for hosts
+
+- name : "Include Debian yaml"
+  include: "debian.yml"
+  when: ansible_os_family == "Debian"
+  tags:
+    - hostname-set
+
+- name: Set hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+  tags:
+    - hostname-set

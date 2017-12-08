@@ -1,0 +1,98 @@
+
+# Remove lxc-docker and docker.io*"
+- name: "Debian | Remove lxc-docker* and docker.io*"
+  apt:
+    name: "{{ item }}"
+    state: absent
+    purge: yes
+    force: yes
+  with_items:
+    - lxc-docker*
+    - docker-io*
+    - docker-engine
+    - docker
+  when: docker_install_engine
+  ignore_errors: yes
+  tags:
+    - docker-engine-install
+
+- name: Remove unnecessary python packages
+  pip:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - docker-py
+  when: docker_install_engine
+  ignore_errors: yes
+  tags:
+    - docker-engine-install
+
+# Install transport https
+- name: "Debian | Install necessary packages"
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - gnupg2
+    - python-pip
+    - curl
+  when: docker_install_engine
+  tags:
+    - docker-engine-install
+
+- name: "Debian | Install docker key"
+  shell: "curl -fsSL {{ docker_key_url }} | sudo apt-key add -"
+  when: docker_install_engine
+  tags:
+    - docker-engine-install
+
+# Install docker engine
+- name: "Debian | Install repo docker for Debian"
+  apt_repository:
+    repo: "{{ docker_repo_url }}"
+    state: present
+  when: docker_install_engine
+  tags:
+    - docker-engine-install
+
+# Install docker apt key
+#- name: "Debian | Install docker APT Key"
+  #apt_key:
+    #keyserver: https://download.docker.com/linux/debian/gpg
+    #id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+  #when: docker_install_engine
+  #tags:
+    #- docker-engine-install
+
+# Install docker package
+- name: "Debian | Install docker-engine package"
+  apt:
+    name: docker-ce
+    state: present
+    update-cache: yes
+    allow_unauthenticated: yes
+  when: docker_install_engine
+  notify: docker start
+  tags:
+    - docker-engine-install
+
+  # Install pip
+- name: "PIP | Update PIP package"
+  pip:
+    name: pip
+    state: latest
+  when: docker_install_engine
+  tags:
+    - docker-engine-install
+
+- name: "PIP | Remove docker-py package"
+  pip:
+    name: docker-py
+    state: present
+  when: docker_install_engine
+  tags:
+    - docker-engine-install
+

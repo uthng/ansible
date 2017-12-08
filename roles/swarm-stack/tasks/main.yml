@@ -1,0 +1,64 @@
+---
+# tasks file for vpcorp.swarm-tools-base
+- name: "Create docker-compose in user home if not exists"
+  file:
+    path: "{{ stack_docker_compose_folder }}"
+    state: directory
+    mode: 0755
+  tags:
+    - stack-prepare
+
+- name: "Copy docker compose file"
+  template:
+    src: "stack.yml.j2"
+    dest: "{{ stack_docker_compose_file }}"
+    mode: 0755
+  tags:
+    - stack-prepare
+    - stack-generate-compose
+
+- debug: var=stack_network_list
+
+- block:
+  - name: "Check if networks exist"
+    shell: "docker network ls | grep -E \"(^| ){{ item }}( |$)\""
+    register: network_exists
+    with_items: "{{ stack_network_list }}"
+    ignore_errors: true
+    tags:
+      - stack-deploy
+
+  - debug: var=network_exists
+
+  #- debug: msg="item.item={{item.item}}, item.rc={{item.rc}}"
+    #with_items: "{{network_exists.results}}"
+
+  - name: "Create the network missing"
+    shell: "docker network create {{ item.item }} -d overlay"
+    when: item.rc != 0
+    with_items: "{{ network_exists.results }}"
+    tags:
+      - stack-deploy
+
+- debug:
+    msg: "stack secret pipe: {{ stack_secret_pipe }}; stack secret list: {{ stack_secret_list }}; stack secret length: {{ stack_secret_list|length }}"
+
+- name: "Create or update stack"
+  shell: "{{ stack_command_deploy }} -c {{ stack_docker_compose_file }} {{ stack_name }}"
+  tags:
+    - stack-deploy
+
+- block:
+  - name: "Check deployed service status"
+    shell: "docker service ls | grep -E \"(^| ){{ stack_name }}_{{ item.name }}( |$)\" | awk '{print $4}'"
+    register: service_status
+    until: service_status.stdout.split('/')[0] == service_status.stdout.split('/')[1]
+    retries: 6
+    delay: 10
+    with_items: "{{ stack_service_list }}"
+
+  - debug: var=service_status
+
+  rescue:
+  - name: "Error of service deployment ({{ service_status.stdout }}). Remove deployed stack"
+    shell: "docker stack rm {{ stack_name }}"

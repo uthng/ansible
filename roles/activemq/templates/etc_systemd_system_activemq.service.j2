@@ -1,0 +1,15 @@
+[Unit]
+Description=Apache ActiveMQ
+After=network-online.target
+
+[Service]
+Type=forking
+EnvironmentFile=/etc/default/activemq
+ExecStart={{ activemq_home }}/bin/activemq start
+ExecStop={{ activemq_home }}/bin/activemq stop
+Restart=on-abort
+User=activemq
+Group=activemq
+
+[Install]
+WantedBy=multi-user.target

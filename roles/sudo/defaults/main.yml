@@ -1,0 +1,25 @@
+---
+# defaults file for sudo
+sudo_distribution: '{{ ansible_distribution | lower() }}'
+sudo_release: '{{ ansible_distribution_release | lower() }}'
+sudo_distribution_release: '{{ sudo_distribution + "-" + sudo_release }}'
+
+# Example:
+# sudo_defaults:
+#  - defaults: env_reset
+#  - name: user1
+#    defaults: requiretty
+# sudo_users:
+#  - name: '%group1'
+#  - name: 'bar'
+#    nopasswd: yes
+#  - name: '%group2'
+#    commands: '/bin/ls'
+#  - name: '%group3'
+#    users: 'user1,user2'
+#    groups: 'group1,group2'
+
+# list of username or %groupname
+sudo_users: []
+# # list of username or %groupname and their defaults
+sudo_defaults: []

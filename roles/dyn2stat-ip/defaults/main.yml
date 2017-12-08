@@ -1,0 +1,42 @@
+---
+# defaults file for dyn2stat-ip
+dyn2static_distribution: '{{ ansible_distribution | lower() }}'
+dyn2static_release: '{{ ansible_distribution_release | lower() }}'
+dyn2static_distribution_release: '{{ dyn2static_distribution + "-" + dyn2static_release }}'
+
+dyn2stat_new_ip: true
+dyn2stat_dns_entry_create: true
+
+dyn2stat_powerdns_host: https://pdns-api-deleg.vpgrp.io
+dyn2stat_powerdns_api_key: apikey
+dyn2stat_powerdns_ttl: 60
+dyn2stat_powerdns_dns_zone: "travel.vpgrp.io"
+dyn2stat_powerdns_dns_fqdn: "{{ hostvars[inventory_hostname].node_fqdn }}"
+
+dyn2stat_phpipam_host: https://phpipam.vpgrp.io
+dyn2stat_phpipam_user: travel
+dyn2stat_phpipam_password: password
+
+dyn2stat_subnets:
+  '10.155.21.254':
+    id: 44
+    name: app_preprod_vpback_dc1_fr
+  '10.155.23.254':
+    id: 45
+    name: data_preprod_vpback_dc1_fr
+  '10.155.25.254':
+    id: 46
+    name: admin_preprod_vpback_dc1_fr
+  '10.155.27.254':
+    id: 47
+    name: dmz_preprod_vpback_dc1_fr
+  '10.150.23.254':
+    id: 21
+    name: data_prod_vpback_dc1_fr
+  '10.150.21.254':
+    id: 20
+    name: app_prod_vpback_dc1_fr
+    #dmz_prod_vpback_dc1_fr:
+    #id: 23
+    #admin_prod_vpback_dc1_fr:
+    #id: 22

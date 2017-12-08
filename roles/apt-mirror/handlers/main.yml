@@ -1,0 +1,11 @@
+---
+# handlers file for apt-mirror
+- name: 'apt-mirror update'
+  command: 'apt-mirror {{ apt_mirror_conf_file }}'
+  when: apt_mirror_repo_update
+  tags:
+    - update
+
+- name: 'apache2 restarted'
+  service: name=apache2 state=restarted enabled=yes
+  tags: apache

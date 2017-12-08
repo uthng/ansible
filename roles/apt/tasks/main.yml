@@ -1,0 +1,42 @@
+---
+# tasks file for apt
+
+# Add certificates for signed repositories
+- name: "Install gpg keys"
+  apt_key: url={{ item }}
+  with_items: "{{ apt_gpg_keys|default([]) }}"
+
+# Backup the existing /etc/sources.list
+- name: "Backup the current sources.list"
+  command: mv /etc/apt/sources.list /etc/apt/sources.list.bak
+
+# Copy the new sources.list
+- name: "Install new sources.list"
+  template:
+    src: sources.list.j2
+    dest: /etc/apt/sources.list
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'apt-get update' ]
+
+# Check if /etc/apt/preferences exists
+- name: "Check if /etc/apt/preferences exists"
+  stat: path=/etc/apt/preferences
+  register: pref
+  when: apt_install_preference
+
+# Backup /etc/apt/preferences
+- name: "Backup /etc/apt/preferences"
+  command: mv /etc/apt/preferences /etc/apt/preferences.bak
+  when: apt_install_preference and pref.stat.exists
+
+# Copy the new /etc/apt/preferences
+- name: "Install new /etc/apt/preferences"
+  template:
+    src: preferences.j2
+    dest: /etc/apt/preferences
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: apt_install_preference

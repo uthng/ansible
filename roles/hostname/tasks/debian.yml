@@ -1,0 +1,7 @@
+- name: "Replace host name corresponding to 127.0.1.1"
+  lineinfile:
+    name: "/etc/hosts"
+    regexp: "^127.0.1.1"
+    line: "{{ hostname_ip }} {{ hostname_newfqdn }} {{ hostname_newhost }}"
+  tags:
+    - hostname-set

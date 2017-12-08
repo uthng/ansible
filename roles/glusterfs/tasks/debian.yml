@@ -1,0 +1,29 @@
+
+- name: "Add apt-key for PPA Glusterfs repo"
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: F7C73FCC930AC9F83B387A5613E01B7B3FE869A9
+  when: glusterfs_distribution == "ubuntu"
+  tags:
+    - glusterfs-install
+
+- name: "Add Glusterfs repo "
+  apt_repository:
+    repo: "deb http://ppa.launchpad.net/gluster/glusterfs-{{ glusterfs_ubuntu_version }}/ubuntu {{ glusterfs_release }} main"
+    state: present
+  when: glusterfs_distribution == "ubuntu"
+  tags:
+    - glusterfs-install
+
+
+- name: "Install glusterfs server"
+  apt:
+    name: "{{ item }}"
+    state: latest
+  notify: restart glusterfs-server
+  with_items:
+    - glusterfs-server
+  tags:
+    - glusterfs-install
+
+

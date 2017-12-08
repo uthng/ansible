@@ -1,0 +1,81 @@
+---
+# tasks file for dyn2stat-ip
+- name: Check if host interface is currently on DHCP
+  shell: "cat /etc/network/interfaces | grep 'iface {{ ansible_default_ipv4.interface }} inet dhcp' | wc -l"
+  register: is_dhcp
+  changed_when: False
+
+
+- block:
+  - name: Get PHPIPAM Token
+    uri:
+      url: "{{ dyn2stat_phpipam_host }}/api/{{ dyn2stat_phpipam_user }}/user/"
+      method: POST
+      user: "{{ dyn2stat_phpipam_user }}"
+      password: "{{ dyn2stat_phpipam_password }}"
+      force_basic_auth: true
+      status_code: 200
+      return_content: yes
+    register: token_response
+
+  #- debug:
+      #msg: "pass {{ dyn2stat_phpipam_password }}, token: {{ (token_response.content|from_json).data['token'] }}"
+
+  - name: Request New IP from PHPIPAM
+    uri:
+      url: "{{ dyn2stat_phpipam_host }}/api/{{ dyn2stat_phpipam_user }}/addresses/first_free/{{ dyn2stat_subnets[ansible_default_ipv4.gateway].id }}/"
+      method: POST
+      headers:
+        token: "{{ (token_response.content|from_json).data['token'] }}"
+      status_code: 201
+      return_content: yes
+    register: ip_response
+
+  - name: "Set new IP as IP static"
+    set_fact:
+      ip_static: "{{ (ip_response.content|from_json).data }}"
+
+  when: dyn2stat_new_ip and is_dhcp.stdout == "1"
+
+- name: "Set current IP as IP static if dyn2stat_new_ip is false"
+  set_fact:
+    ip_static: "{{ ansible_default_ipv4.address }}"
+  when: not dyn2stat_new_ip and is_dhcp.stdout == "1"
+
+- debug:
+    msg: "IP STATIC: {{ ip_static }}"
+  when: ip_static is defined
+
+- block:
+  - name: Create a DNS Entry
+    uri:
+      url: "{{ dyn2stat_powerdns_host }}/api/v1/servers/localhost/zones/{{ dyn2stat_powerdns_dns_zone }}"
+      headers:
+        X-API-KEY: "{{ dyn2stat_powerdns_api_key }}"
+      method: PATCH
+      body: '{"rrsets":[{"name":"{{ dyn2stat_powerdns_dns_fqdn }}.","type":"A","ttl":{{ dyn2stat_powerdns_ttl }},"changetype":"REPLACE","records":[{"content":"{{ ip_static }}","disabled":false}]}]}'
+      status_code: 204
+      body_format: json
+    when: dyn2stat_dns_entry_create
+
+  - name: Copy script interface
+    template:
+      src: etc_network_interfaces.j2
+      dest: /etc/network/interfaces.static
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: Restart network
+    shell: "(sleep 5; ifdown {{ ansible_default_ipv4.interface }} && cp /etc/network/interfaces.static /etc/network/interfaces && ifup {{ ansible_default_ipv4.interface }}) &"
+    async: 100
+    poll: 0
+
+  - name: Wait for the hosts' network interface to come back up
+    local_action:
+      module: wait_for
+      host: "{{ ip_static }}"
+      port: 22
+      delay: 10
+      state: started
+  when: is_dhcp.stdout == "1"

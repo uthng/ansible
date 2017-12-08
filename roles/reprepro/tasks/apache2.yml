@@ -1,0 +1,55 @@
+# Install apache vhost conf for zabbix at 443 port
+- name: "Apache2 | Install apache vhost"
+  template: src=apache_vhost.conf.j2
+            dest='/etc/apache2/sites-available/{{ reprepro_www_vhost_conf }}'
+            owner=root
+            group=root
+            mode=0644
+  when: reprepro_www_vhost
+  tags:
+    - repo
+    - www
+    - apache
+
+# Add port if not exists in ports.conf of Apache
+- name: "Apache2 | Add port if it does not already exist"
+  lineinfile: dest='/etc/apache2/ports.conf'
+              line='Listen {{ reprepro_www_port }}'
+  when: reprepro_www_vhost
+  tags:
+    - repo
+    - www
+    - apache
+
+# Activate conf reprepro site
+- name: "Apache2 | Install apache vhost - Activate site"
+  command: 'a2ensite {{ reprepro_www_vhost_conf | replace(".conf", "") }}'
+  when: reprepro_www_vhost
+  tags:
+    - repo
+    - www
+    - apache
+
+# Enable apache SSL module support
+- name: "Apache2 | Install apache vhost - Enable SSL module"
+  command: a2enmod ssl
+  when: reprepro_www_vhost and reprepro_www_sslengine == "on"
+  tags:
+    - repo
+    - www
+    - apache
+
+# Generate authentication user file for repo access
+- name: "Apache2 | Generate authentication user file {{ reprepro_www_authuserfile }}"
+  htpasswd:
+    path={{ reprepro_www_authuserfile }}
+    name={{ reprepro_www_authuser }}
+    password={{ reprepro_www_authuserpasswd }}
+    state=present
+    create=yes
+  when: reprepro_www_vhost
+  notify: 'apache2 restarted'
+  tags:
+    - repo
+    - www
+    - apache

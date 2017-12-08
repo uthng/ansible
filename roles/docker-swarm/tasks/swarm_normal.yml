@@ -1,0 +1,60 @@
+- name: Check if swarm mode is enabled
+  shell: "docker info | egrep '^Swarm: ' | cut -d ' ' -f2"
+  register: swarm_status
+  tags:
+    - setup-normal
+
+- name: Setup swarm init
+  shell: docker swarm init --advertise-addr={{ hostvars[inventory_hostname]['ansible_' + swarm_manager_interface]['ipv4']['address'] }}:{{ swarm_manager_port }}
+  register: swarm_initialized
+  run_once: true
+  when: hostvars[inventory_hostname].swarm_node_role == "manager" and swarm_status.stdout == "inactive"
+  tags:
+    - setup-normal
+    - setup-manager
+
+- name: Save address IP of 1er master
+  set_fact:
+    manager_ip: "{{ hostvars[inventory_hostname]['ansible_' + swarm_manager_interface]['ipv4']['address'] }}"
+    manager_port: "{{ swarm_manager_port }}"
+    manager_hostname: "{{ inventory_hostname }}"
+  run_once: true
+  when:  hostvars[inventory_hostname].swarm_node_role == "manager" and (swarm_status.stdout == "active" or (swarm_initialized is defined and swarm_initialized.rc == 0))
+  tags:
+    - setup-normal
+    - setup-manager
+
+# Retrieve tokens to join manager or node
+- name: Retrieve token for manager
+  shell: docker swarm join-token -q manager
+  register: swarm_manager_token
+  run_once: true
+  when:  hostvars[inventory_hostname].swarm_node_role == "manager" and (swarm_status.stdout == "active" or (swarm_initialized is defined and swarm_initialized.rc == 0))
+  tags:
+    - setup-normal
+
+- name: Retrieve token for worker
+  shell: docker swarm join-token -q worker
+  register: swarm_worker_token
+  run_once: true
+  when:  hostvars[inventory_hostname].swarm_node_role == "manager" and (swarm_status.stdout == "active" or (swarm_initialized is defined and swarm_initialized.rc == 0))
+  tags:
+    - setup-normal
+
+- debug:
+    msg: "{{ hostvars[inventory_hostname].swarm_node_role }} {{ manager_ip }} {{ manager_port }} {{ manager_hostname }}"
+
+# If host is another manager, join to cluster manager
+- name: Join a new swarm manager
+  shell: docker swarm join --advertise-addr={{ hostvars[inventory_hostname]['ansible_' + swarm_manager_interface]['ipv4']['address'] }}:{{ swarm_manager_port }} --token {{ swarm_manager_token.stdout }} {{ manager_ip }}:{{ manager_port }}
+  when: hostvars[inventory_hostname].swarm_node_role == "manager" and swarm_status.stdout == "inactive" and manager_ip is defined and manager_hostname != inventory_hostname
+  tags:
+    - setup-normal
+    - setup-manager
+
+- name: Join a new swarm nodes
+  shell: docker swarm join --advertise-addr={{ hostvars[inventory_hostname]['ansible_' + swarm_node_interface]['ipv4']['address'] }}:{{ swarm_node_port }} --token {{ swarm_worker_token.stdout }} {{ manager_ip }}:{{ manager_port }}
+  when: hostvars[inventory_hostname].swarm_node_role == "node" and swarm_status.stdout == "inactive" and manager_ip is defined
+  tags:
+    - setup-normal
+    - setup-node

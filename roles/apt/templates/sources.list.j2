@@ -1,0 +1,5 @@
+{% for repo in apt_repositiories[apt_distribution_release] %}
+
+{{ repo.type_archive }} {{ repo.url_repository }} {{ repo.distribution }} {{ repo.components | join(' ') }}
+
+{% endfor %}

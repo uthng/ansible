@@ -1,0 +1,35 @@
+---
+# defaults file for openstack-configfiles
+
+## Endpoint types
+config_cinder_endpoint_type: internalURL
+config_nova_endpoint_type: internalURL
+config_os_endpoint_type: internalURL
+config_clouds_yml_interface: internal
+
+## Default credentials
+config_os_username: admin
+config_os_password:
+config_os_tenant_name: admin
+config_os_auth_url: "http://172.29.236.100:5000/v3"
+config_os_user_domain_name: Default
+config_os_project_domain_name: Default
+config_os_region_name: RegionOne
+
+## Deliberately allow access to SSL endpoints with bad certificates
+config_keystone_service_adminuri_insecure: false
+config_keystone_service_internaluri_insecure: false
+config_insecure: "{{ (config_keystone_service_adminuri_insecure | bool or config_keystone_service_internaluri_insecure | bool) | default(false) }}"
+
+## Create config file
+config_file_dest: "{{ ansible_env.HOME }}/openrc"
+config_file_owner: "{{ ansible_user_id }}"
+config_file_group: "{{ ansible_user_id }}"
+
+## Create clouds.yml file
+config_openstack_client_config_dir_dest: "{{ ansible_env.HOME }}/.config/openstack"
+config_openstack_client_config_dir_owner: "{{ ansible_user_id }}"
+config_openstack_client_config_dir_group: "{{ ansible_user_id }}"
+config_clouds_yml_file_dest: "{{ config_openstack_client_config_dir_dest }}/clouds.yaml"
+config_clouds_yml_file_owner: "{{ ansible_user_id }}"
+config_clouds_yml_file_group: "{{ ansible_user_id }}"

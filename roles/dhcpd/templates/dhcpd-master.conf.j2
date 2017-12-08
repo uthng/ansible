@@ -1,0 +1,31 @@
+{% set comma1 = joiner(", ") %}
+{% set comma2 = joiner(", ") %}
+{% set comma3 = joiner(", ") %}
+
+authoritative;
+log-facility local7;
+
+option domain-name "{{ dhcpd_domain_name }}";
+option domain-name-servers {% for dns in dhcpd_domain_name_servers %}{{ comma1() }}{{ dns }}{% endfor %};
+option ntp-servers {% for ntp in dhcpd_ntp_servers %}{{ comma2() }}{{ ntp }}{% endfor %};
+option subnet-mask {{ dhcpd_subnet_mask }};
+option domain-search {% for domain in dhcpd_domain_search %}{{ comma3() }}"{{ domain }}"{% endfor %};
+
+{% if dhcpd_ha %}
+failover peer "dhcpd-failover" {
+    primary;
+    address {{ dhcpd_master }};
+    port    647;
+
+    peer address {{ dhcpd_slave }};
+    peer port    647;
+
+    max-response-delay       60;
+    max-unacked-updates      10;
+    mclt                     1800;
+    split                    128;
+    load balance max seconds 3;
+}
+{% endif %}
+
+include "/etc/dhcp/dhcpd-subnet.conf";

@@ -1,0 +1,33 @@
+---
+# tasks file for openstack-configfiles
+
+- name: Create openrc file
+  template:
+    src: openrc.j2
+    dest: "{{ config_file_dest }}"
+    owner: "{{ config_file_owner }}"
+    group: "{{ config_file_group }}"
+    mode: "0600"
+  tags:
+    - openrc-config
+
+- name: Create OpenStack client configuration directory
+  file:
+    dest: "{{ config_openstack_client_config_dir_dest }}"
+    owner: "{{ config_openstack_client_config_dir_owner }}"
+    group: "{{ config_openstack_client_config_dir_group }}"
+    mode: "0600"
+    state: directory
+  tags:
+    - cloud-install
+
+- name: Create clouds.yaml file
+  template:
+    src: clouds.yaml.j2
+    dest: "{{ config_clouds_yml_file_dest }}"
+    owner: "{{ config_clouds_yml_file_owner }}"
+    group: "{{ config_clouds_yml_file_group }}"
+    mode: "0600"
+  tags:
+    - cloud-install
+    - cloud-config

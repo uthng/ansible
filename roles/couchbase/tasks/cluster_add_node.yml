@@ -1,0 +1,11 @@
+- name: Join slave nodes
+  shell: "{{ couchbase_server_bin_path }}/couchbase-cli server-add -c {{ couchbase_server_master_fqdn }}:{{ couchbase_server_admin_port }} --user={{ couchbase_server_admin }} --password={{ couchbase_server_password }} --server-add={{ hostvars[inventory_hostname]['ansible_fqdn']}}:{{ couchbase_server_admin_port }} --server-add-username={{ couchbase_server_admin }} --server-add-password={{ couchbase_server_password }} --services={{hostvars[inventory_hostname]['node_services']}}"
+  when: couchbase_server_master_fqdn is defined and couchbase_server_master_fqdn != ''
+  tags:
+    - couchbase-cluster-add-node
+
+- name: Rebalance cluster
+  shell: "{{ couchbase_server_bin_path }}/couchbase-cli rebalance -c {{ couchbase_server_master_fqdn }}:{{ couchbase_server_admin_port }} --user={{ couchbase_server_admin }} --password={{ couchbase_server_password }}"
+  when: couchbase_server_master_fqdn is defined  and couchbase_server_master_fqdn != ''
+  tags:
+    - couchbase-cluster-add-node

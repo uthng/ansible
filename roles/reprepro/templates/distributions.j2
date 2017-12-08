@@ -1,0 +1,17 @@
+---
+{% for repo in reprepro_repos[reprepro_repo_name] %}
+Origin: {{ repo.Origin }}
+Label: {{ repo.Label }}
+Suite: {{ repo.Suite }}
+Codename: {{ repo.Codename }}
+Architectures: {{ repo.Architectures }}
+Components: {{ repo.Components }}
+UDebComponents: {{ repo.UDebComponents }}
+Description: {{ repo.Description }}
+Contents: {{ repo.Contents }}
+Tracking: {{ repo.Tracking }}
+NotAutomatic: {{ repo.NotAutomatic }}
+SignWith: {{ repo.SignWith }}
+Log: {{ repo.Log }}
+
+{% endfor %}

@@ -1,0 +1,20 @@
+
+# Get a list of all existing instances
+- name: "OSI | Get list of all existing instances"
+  os_server_facts:
+    cloud: "{{ osi_cloud }}"
+    endpoint_type: "internal"
+  tags:
+    - instance-cleanup
+    - instance-list
+
+# Clean up all instances previously created
+- name: "OSI | Remove all instances previously created"
+  os_server:
+    cloud: "{{ osi_cloud }}"
+    endpoint_type: "internal"
+    state: "absent"
+    name: "{{ item.name }}"
+  with_items: "{{ openstack_servers }}"
+  tags:
+    - instance-cleanup

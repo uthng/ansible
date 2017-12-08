@@ -1,0 +1,25 @@
+# Node master
+- name: Init cluster on node master
+  shell: "{{ couchbase_server_bin_path }}/couchbase-cli cluster-init -c {{ hostvars[inventory_hostname]['ansible_fqdn'] }}:{{ couchbase_server_admin_port }} --user={{ couchbase_server_admin }} --password={{ couchbase_server_password }} --cluster-init-username={{ couchbase_server_admin }} --cluster-init-password={{ couchbase_server_password }} --cluster-init-port={{couchbase_server_admin_port}} --cluster-init-ramsize={{ couchbase_server_ram }} --cluster-index-ramsize={{ couchbase_server_ram }} --services={{ hostvars[inventory_hostname]['node_services'] }}"
+  register: cluster_initialized
+  run_once: true
+  when: hostvars[inventory_hostname].node_role == "master"
+  tags:
+    - couchbase-cluster-init
+
+- name: Save master node
+  set_fact:
+    couchbase_server_master_name: "{{ inventory_hostname }}"
+    couchbase_server_master_fqdn: "{{ hostvars[inventory_hostname]['ansible_fqdn'] }}"
+  run_once: true
+  when: hostvars[inventory_hostname].node_role == "master" and cluster_initialized.rc == 0
+  tags:
+    - couchbase-cluster-init
+
+- debug:
+    msg: "{{ cluster_initialized.rc }} {{ couchbase_server_master_name }} {{ couchbase_server_master_fqdn }}"
+
+- include: "cluster_add_node.yml"
+  when: cluster_initialized.rc == 0 and couchbase_server_master_fqdn is defined and couchbase_server_master_name != inventory_hostname
+  tags:
+    - couchbase-cluster-init

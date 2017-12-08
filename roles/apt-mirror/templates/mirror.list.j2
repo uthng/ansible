@@ -1,0 +1,25 @@
+############# config ##################
+#
+set base_path    {{ apt_mirror_base_path }}
+#
+set mirror_path  $base_path/mirror
+set skel_path    $base_path/skel
+set var_path     $base_path/var
+set cleanscript $var_path/clean.sh
+set defaultarch  {{ apt_mirror_defaultarch }}
+set postmirror_script $var_path/postmirror.sh
+set run_postmirror {{ apt_mirror_run_postmirror }}
+set nthreads     {{ apt_mirror_nthreads}}
+set _tilde {{ apt_mirror_tilde }}
+#
+############# end config ##############
+
+##### Mirror section #######
+{% for mirror in apt_mirror_repos[apt_mirror_distribution_release]|selectattr("distribution", "defined")|list|unique %}
+{{ mirror.type_archive }} {{ mirror.url_repository }} {{ mirror.distribution }} {{ mirror.components | join(' ') }}
+{% endfor %}
+
+##### Clean section #######
+{% for mirror in apt_mirror_repos[apt_mirror_distribution_release]|selectattr("distribution", "undefined")|list|unique %}
+{{ mirror.type_archive }} {{ mirror.url_repository }}
+{% endfor %}

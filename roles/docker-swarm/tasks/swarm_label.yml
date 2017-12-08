@@ -1,0 +1,4 @@
+- name: Get list of labels
+  shell: "docker node inspect --format='{{range $key, $value := .Spec.Labels }}{{ $key }} {{ end }}' {{ item }}"
+  with_items:
+    -

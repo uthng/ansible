@@ -1,0 +1,44 @@
+- name: Create /var/log/dhcpd.log
+  file:
+    dest: /var/log/dhcpd.log
+    state: touch
+  tags:
+    - dhcpd-log-configure
+
+- name: Set rsyslog and logrotate files to modify for Ubuntu
+  set_fact:
+    rsyslog_conf: "/etc/rsyslog.d/50-default.conf"
+  when: ansible_distribution == "Ubuntu"
+  tags:
+    - dhcpd-log-configure
+
+- name: Set rsyslog and logrotate files to modify for Debian
+  set_fact:
+    rsyslog_conf: "/etc/rsyslog.conf"
+  when: ansible_distribution == "Debian"
+  tags:
+    - dhcpd-log-configure
+
+- block:
+  - name: Add /varlog/dhcpd to rsyslog's 50-default.conf
+    lineinfile:
+      dest: "{{ rsyslog_conf }}"
+      insertafter: "^auth,authpriv\\.\\*"
+      line: "local7.*       /var/log/dhcpd.log"
+  - name: Configure /var/log/syslog
+    lineinfile:
+      dest: "{{ rsyslog_conf }}"
+      regexp: "^\\*\\.\\*;auth,authpriv\\.none"
+      line: "*.*;auth,authpriv.none,local7.none     -/var/log/syslog"
+  - name: Restart rsyslog service
+    service:
+      name: rsyslog.service
+      state: restarted
+
+  - name: Add /var/log/dhcpd.log to logrotate rsyslog
+    lineinfile:
+      dest: /etc/logrotate.d/rsyslog
+      insertafter: "^/var/log/messages"
+      line: "/var/log/dhcpd.conf"
+  tags:
+    - dhcpd-log-configure

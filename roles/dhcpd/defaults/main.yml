@@ -1,0 +1,35 @@
+---
+# defaults file for dhcpd
+
+dhcpd_distribution: '{{ ansible_distribution | lower() }}'
+dhcpd_release: '{{ ansible_distribution_release | lower() }}'
+dhcpd_distribution_release: '{{ dhcpd_distribution + "-" + dhcpd_release }}'
+
+
+# DHCP CONFIGURATION VARIABLES
+dhcpd_subnet_mask: 255.255.254.0
+dhcpd_domain_name: oredis-vp-pp.local
+dhcpd_domain_name_servers: ["10.22.55.15", "10.22.55.16"]
+dhcpd_domain_search: ["oredis-vp-pp.local", "oredis-vp.local", "vpback.dc1.fr.vpgrp.io", "vpgrp.io" ]
+dhcpd_ntp_servers: ["oredis-vp-pp.local"]
+
+dhcpd_ha: true
+
+# you need to provide this variable
+#dhcpd_subnets:
+   #- ip: 10.155.24.0
+     #netmask: 255.255.254.0
+     #gateway: 10.155.25.254
+     #broadcast: 10.155.25.255
+     #from: 10.155.24.10
+     #to: 10.155.24.100
+   #- ip: 10.155.20.0
+     #netmask: 255.255.254.0
+     #gateway: 10.155.21.254
+     #broadcast: 10.155.21.255
+     #from: 10.155.20.10
+     #to: 10.155.20.100
+
+# Auto determinate which host is master and which one is slave
+dhcpd_master: "{% for host in groups[group_names[0]] %}{% if hostvars[host].node_role == 'master' %}{{ host }}{% endif %}{% endfor %}"
+dhcpd_slave: "{% for host in groups[group_names[0]] %}{% if hostvars[host].node_role == 'slave' %}{{ host }}{% endif %}{% endfor %}"

@@ -1,0 +1,8 @@
+{{ ansible_managed | comment }}
+
+export http_proxy={{ proxy_http }}:{{ proxy_port}}
+export https_proxy={{ proxy_https }}:{{ proxy_port }}
+export HTTP_PROXY={{ proxy_http }}:{{ proxy_port}}
+export HTTPS_PROXY={{ proxy_http }}:{{ proxy_port}}
+export no_proxy={{ proxy_no_proxy }}
+export NO_PROXY={{ proxy_no_proxy }}

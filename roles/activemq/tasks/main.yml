@@ -1,0 +1,15 @@
+---
+# tasks file for activemq
+
+# Include Debian for package installation
+- name: "Include Debian yaml"
+  include: "debian.yml"
+  when: activemq_install_enabled and ansible_os_family == "Debian"
+  tags:
+    - activemq-install
+
+- name: "Configure ActiveMQ"
+  include: "configure.yml"
+  when: activemq_configure_enabled and ansible_os_family == "Debian"
+  tags:
+    - activemq-configure

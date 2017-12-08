@@ -1,0 +1,129 @@
+---
+# defaults file for zabbix-server
+
+# General information about Zabbix server
+zabbix_server_version: '3.0'
+zabbix_server_timezone: 'Europe/Paris'
+zabbix_server_vhost: True
+zabbix_server_frontend: True
+
+zabbix_server_repo: True
+#zabbix_server_repo_url: "deb http://repo.zabbix.com/zabbix/{{ zabbix_server_version }}/debian/ {{ ansible_distribution_release }} main"
+zabbix_server_repo_url: "deb http://192.168.90.46:81/zabbix-mirror jessie main"
+zabbix_server_repo_key: False
+zabbix_server_repo_key_url: ""
+
+# Zabbix server configuration variables in zabbix_server.conf
+# Only some basic variables here. If needed, we can add more following
+# the configuration file
+zabbix_server_host: 'localhost'
+zabbix_server_name: 'Debian8.3-Zabbix'
+zabbix_server_listenport: 10051
+zabbix_server_logfile: '/var/log/zabbix/zabbix_server.log'
+zabbix_server_logfilesize: 10
+zabbix_server_pidfile: '/var/run/zabbix/zabbix_server.pid'
+zabbix_server_timeout: 4
+zabbix_server_alertscriptspath: '/usr/lib/zabbix/alertscripts'
+zabbix_server_externalscripts: '/usr/lib/zabbix/externalscripts'
+zabbix_server_fpinglocation: '/usr/bin/fping'
+zabbix_server_fping6location: '/usr/bin/fping6'
+zabbix_server_logslowqueries: 3000
+
+# Zabbix Database
+zabbix_database_creation: True
+zabbix_database_sqlload: True
+zabbix_database_type: 'mysql'
+zabbix_database_type_long: 'mysql'
+zabbix_database_host: 'localhost'
+zabbix_database_port: 0
+zabbix_database_name: 'zabbix'
+zabbix_database_user: 'zabbix'
+zabbix_database_password: 'WeAreiDC!'
+zabbix_database_schema_done: '/etc/zabbix/schema.done'
+
+
+# Apache VHOST
+zabbix_apache_vhost_interface: 'eth0'
+zabbix_apache_vhost_port: 443
+zabbix_apache_vhost_servername: 'zabbix.cis.atos.net'
+zabbix_apache_vhost_serveralias: []
+zabbix_apache_vhost_serveradmin: 'zabbix.cis@atos.net'
+zabbix_apache_vhost_openssl_conf: '/etc/ssl/openssl_atos.cnf'
+zabbix_apache_vhost_sslengin: 'on'
+zabbix_apache_vhost_sslcert: '/etc/ssl/certs/zabbix.crt'
+zabbix_apache_vhost_sslkey: '/etc/ssl/private/zabbix.key'
+
+# zabbix-server configuration vars
+# zabbix_server_listenport: 10051
+# zabbix_server_sourceip:
+# zabbix_server_logfile: /var/log/zabbix/zabbix_server.log
+# zabbix_server_logfilesize: 10
+# zabbix_server_debuglevel: 3
+# zabbix_server_pidfile: /var/run/zabbix/zabbix_server.pid
+# zabbix_server_dbhost: localhost
+# zabbix_server_dbname: zabbix-server
+# zabbix_server_dbschema:
+# zabbix_server_dbuser: zabbix-server
+# zabbix_server_dbpassword: zabbix-server
+# zabbix_server_dbsocket:
+# zabbix_server_dbport:
+# zabbix_server_startpollers: 5
+# zabbix_server_startipmipollers: 0
+# zabbix_server_startpollersunreachable: 1
+# zabbix_server_starttrappers: 5
+# zabbix_server_startpingers: 1
+# zabbix_server_startdiscoverers: 1
+# zabbix_server_starttimers: 1
+# zabbix_server_starthttppollers: 1
+# zabbix_server_javagateway:
+# zabbix_server_javagatewayport: 10052
+# zabbix_server_startjavapollers: 5
+# zabbix_server_startvmwarecollectors: 0
+# zabbix_server_vmwarefrequency: 60
+# zabbix_server_vmwarecachesize: 8M
+# zabbix_server_snmptrapperfile: /tmp/zabbix_traps.tmp
+# zabbix_server_startsnmptrapper: 0
+# zabbix_server_listenip:
+# zabbix_server_maxhousekeeperdelete: 500
+# zabbix_server_housekeepingfrequency: 1
+# zabbix_server_senderfrequency: 30
+# zabbix_server_cachesize: 8M
+# zabbix_server_cacheupdatefrequency: 60
+# zabbix_server_startdbsyncers: 4
+# zabbix_server_historycachesize: 8M
+# zabbix_server_historyindexcachesize: 4M
+# zabbix_server_trendcachesize: 4M
+# zabbix_server_historytextcachesize: 16M
+# zabbix_server_valuecachesize: 8M
+# zabbix_server_nodenoevents: 0
+# zabbix_server_nodenohistory: 0
+# zabbix_server_timeout: 3
+# zabbix_server_trappertimeout: 300
+# zabbix_server_unreachableperiod: 45
+# zabbix_server_unavailabledelay: 60
+# zabbix_server_unreachabledelay: 15
+# zabbix_server_alertscriptspath: ${datadir}/zabbix/alertscripts
+# zabbix_server_externalscripts: /usr/lib/zabbix/externalscripts
+# zabbix_server_fping6location: /usr/sbin/fping6
+# zabbix_server_fpinglocation: /usr/sbin/fping
+# zabbix_server_sshkeylocation:
+# zabbix_server_logslowqueries: 0
+# zabbix_server_tmpdir: /tmp
+# zabbix_server_startproxypollers: 1
+# zabbix_server_proxyconfigfrequency: 3600
+# zabbix_server_proxydatafrequency: 1
+# zabbix_server_allowroot: 0
+# zabbix_server_user: zabbix
+# zabbix_server_include: /etc/zabbix/zabbix_server.conf.d
+# zabbix_server_sslcalocation:
+# zabbix_server_sslcert: /etc/ssl/certs/zabbix.crt
+# zabbix_server_sslkey: /etc/ssl/private/zabbix.key
+# zabbix_server_loadmodulepath: ${libdir}/modules
+# server_loadmodule:
+# zabbix_server_tlscafile:
+# zabbix_server_tlscrlfile:
+# zabbix_server_tlscertfile:
+# zabbix_server_startescalators: 1
+# zabbix_server_tlskeyfile:
+# zabbix_server_vmwareperffrequency: 60
+# zabbix_server_vmwaretimeout: 10

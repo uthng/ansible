@@ -1,0 +1,23 @@
+{% set comma = joiner(", ") %}
+
+default-lease-time 14400;
+max-lease-time     43200;
+
+{% for subnet in dhcpd_subnets %}
+subnet {{ subnet.ip }} netmask {{ subnet.netmask }} {
+    option routers           {{ subnet.gateway }};
+    option broadcast-address {{ subnet.broadcast }};
+    {% if subnet.domain_search is defined and subnet.domain_search != "" -%}
+    option domain-search {% for domain in subnet.domain_search %}{{ comma() }}"{{ domain }}"{% endfor %};
+    {% endif %}
+    {%- if dhcpd_ha -%}
+    pool {
+        failover peer "dhcpd-failover";
+        range {{ subnet.from }} {{ subnet.to }};
+    }
+    {% else -%}
+    range {{ subnet.from }} {{ subnet.to }};
+    {% endif -%}
+}
+
+{% endfor %}

@@ -1,0 +1,21 @@
+
+# Populate instances in Openstack
+- name: "OSI | Populate instances"
+  os_server:
+    cloud: "default"
+    endpoint_type: "internal"
+    name: "{{ item.name }}"
+    state: "present"
+    image: "{{ item.image }}"
+    flavor: "{{ item.flavor | default('m1.small') }}"
+    network: "{{ item.network }}"
+    security_groups: "{{ item.security_groups | default('default') }}"
+    key_name: "{{ item.key_name | default(omit) }}"
+    nics: "{{ item.nics | default(omit) }}"
+    meta: "{{ item.meta | default(omit) }}"
+    floating_ip_pools: "{{ item.floating_ip_pools | default(omit) }}"
+    floating_ips: "{{ item.floating_ips | default(omit) }}"
+  with_items: "{{ osi_instances }}"
+  tags:
+    - instance-populate
+    - instance-init

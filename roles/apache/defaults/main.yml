@@ -1,0 +1,22 @@
+---
+# defaults file for apache
+######################## DISTRIBUTION ##########################################
+apache_distribution: '{{ ansible_distribution | lower() }}'
+apache_release: '{{ ansible_distribution_release | lower() }}'
+apache_distribution_release: '{{ apache_distribution + "-" + apache_release }}'
+
+apache_vhosts_to_install: [ 'repos' ]
+
+################ VHOST LIST ####################################################os
+apache_vhosts:
+  'repos':
+    Host: '{{ ansible_default_ipv4.address }}'
+    Port: 4445
+    Directives:
+      DocumentRoot: '/usr/share/repos'
+      ServerName: 'repos.cis.atos.net'
+      ServerAlias: 'repos.cis.atos.net'
+      ServerAdmin: 'repos.cis@atos.net'
+      SSLEngine: 'on'
+      SSLCertificateFile: '/etc/ssl/certs/zabbix.crt'
+      SSLCertificateKeyFile: '/etc/ssl/private/zabbix.key'

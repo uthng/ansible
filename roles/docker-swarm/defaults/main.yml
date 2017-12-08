@@ -1,0 +1,26 @@
+---
+# defaults file for docker-swarm
+
+######################## DISTRIBUTION #################################
+swarm_distro: '{{ ansible_distribution | lower() }}'
+swarm_release: '{{ ansible_distribution_release | lower() }}'
+swarm_distro_release: '{{ swarm_distro + "-" + swarm_release }}'
+
+## SWARM OPTIONS ####
+# Cluster mode : normal or container
+# If dev: using docker in swarm mode simply with 1 manager & several nodes
+# If prod: using docker swarm container with replication : 2 managers and several nodes
+swarm_cluster_mode: "normal"
+
+swarm_manager_port: 2377
+swarm_manager_address: ""
+swarm_manager_interface: "eth0"
+swarm_node_port: 2377
+swarm_node_address: ""
+swarm_node_interface: "eth0"
+
+# Discovery services
+swarm_container_discovery_service_name: "consul"
+swarm_container_discovery_service_url: "localhost"
+swarm_container_discovery_service_port: 8500
+swarm_container_discovery_service_path: "swarm"

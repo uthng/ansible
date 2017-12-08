@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+clouds:
+  default:
+    auth:
+      auth_url: {{ config_os_auth_url }}
+      project_name: {{ config_os_tenant_name }}
+      tenant_name: {{ config_os_tenant_name }}
+      username: {{ config_os_username }}
+      password: {{ config_os_password }}
+      user_domain_name: {{ config_os_user_domain_name }}
+      project_domain_name: {{ config_os_project_domain_name }}
+    region_name: {{ config_os_region_name }}
+    interface: {{ config_clouds_yml_interface }}
+{% if config_os_auth_url.endswith('v3') %}
+    identity_api_version: "3"
+{% else %}
+    identity_api_version: "2.0"
+{% endif %}

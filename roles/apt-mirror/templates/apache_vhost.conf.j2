@@ -1,0 +1,27 @@
+<VirtualHost {{ apt_mirror_www_interface }}:{{apt_mirror_www_port }}>
+    DocumentRoot {{ apt_mirror_www_root }}
+
+    ServerName {{ apt_mirror_www_servername }}
+    {% for alias in apt_mirror_www_serveralias %}
+    ServerAlias {{ alias }}
+    {% endfor %}
+    ServerAdmin {{ apt_mirror_www_serveradmin }}
+
+    <Directory "{{ apt_mirror_www_root }}">
+        AuthType {{ apt_mirror_www_authtype }}
+        AuthName {{ apt_mirror_www_authname }}
+        AuthUserFile {{ apt_mirror_www_authuserfile }}
+        Require valid-user
+
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        #Order allow,deny
+        #Allow from all
+    </Directory>
+
+    {% if apt_mirror_www_sslengine == "on" %}
+    SSLEngine {{ apt_mirror_www_sslengine }}
+    SSLCertificateFile    {{ apt_mirror_www_sslcertificatefile }}
+    SSLCertificateKeyFile {{ apt_mirror_www_sslcertificatekeyfile }}
+    {% endif %}
+</VirtualHost>

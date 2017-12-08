@@ -1,0 +1,8 @@
+{{ ansible_managed | comment }}
+{% set comma = joiner(', ') %}
+
+search {% for domain in resolvconf_domain_search %}{{ comma() }}{{ domain }}{% endfor %}
+
+{% for ns in resolvconf_nameservers %}
+nameserver {{ ns }}
+{% endfor %}

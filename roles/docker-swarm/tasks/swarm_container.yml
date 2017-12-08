@@ -1,0 +1,28 @@
+- name: Setup swarm managers in replication mode
+  docker_container:
+    name: swarm-manager
+    image: swarm
+    command: "manage -H :4000 --replication --advertise {{ hostvars[inventory_hostname]['ansible_' + swarm_manager_interface]['ipv4']['address'] }}:{{ swarm_manager_port }} {{ swarm_container_discovery_service_name }}://{{ swarm_container_discovery_service_url }}:{{ swarm_container_discovery_service_port }}/{{ swarm_container_discovery_service_path }}"
+    state: started
+    recreate: yes
+    ports:
+      - "{{ swarm_manager_port }}:{{ swarm_manager_port }}"
+  when: hostvars[inventory_hostname].swarm_node_role == "manager"
+  tags:
+    - setup-prod
+    - setup-manager
+
+- name: Setup swarm nodes in normal mode
+  docker_container:
+    name: swarm-node
+    image: swarm
+    command: "join --advertise={{ hostvars[inventory_hostname]['ansible_' + swarm_node_interface]['ipv4']['address'] }}:{{ swarm_node_port }} {{ swarm_container_discovery_service_name }}://{{ swarm_container_discovery_service_url }}:{{ swarm_container_discovery_service_port }}/{{ swarm_container_discovery_service_path }}"
+    state: started
+    recreate: yes
+    ports:
+      - "{{ swarm_node_port }}:{{ swarm_node_port }}"
+  when: hostvars[inventory_hostname].swarm_node_role == "node"
+  tags:
+    - setup-prod
+    - setup-node
+

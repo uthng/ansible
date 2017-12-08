@@ -1,0 +1,49 @@
+---
+# defaults file for couchbase
+
+couchbase_distribution: '{{ ansible_distribution | lower() }'
+couchbase_release: '{{ ansible_distribution_release | lower() }}'
+couchbase_distribution_release: '{{ couchbase_distribution + "-" + couchbase_release }}'
+
+# Options
+couchbase_install_enabled: True
+couchbase_configure_enabled: True
+couchbase_cluster_init_enabled: True
+couchbase_cluster_add_node_enabled: False
+
+# Server options
+# Edition: enterprise or community
+couchbase_server_edition: "community"
+couchbase_server_version: "5.4.1"
+couchbase_server_admin: "Administrator"
+couchbase_server_password: "password"
+couchbase_server_ram: 3072
+couchbase_server_admin_port: 8091
+couchbase_server_epmd_port: 4369
+couchbase_server_admin_ssl_port: 18091
+couchbase_server_api_port: 8092
+couchbase_server_api_ssl_port: 18092
+couchbase_server_default_bucket: default
+couchbase_server_internal_ports: "11207:11215"
+couchbase_server_node_data_ports: "21100:21299"
+couchbase_server_sshd_port: 22
+couchbase_server_home_path: "/opt/couchbase"
+couchbase_server_bin_path: "{{ couchbase_server_home_path }}/bin"
+couchbase_server_config_file: "{{ couchbase_server_home_path }}/var/lib/couchbase/config/config.dat"
+couchbase_server_filesystem: "ext4"
+#couchbase_server_mountpoint: "/"
+#couchbase_server_partition: "/dev/mapper/VolGroup-lv_root"
+#couchbase_server_mount_options: "noatime,barrier=0,errors=remount-ro"
+couchbase_server_data_path: "{{ couchbase_server_home_path }}/var/lib/couchbase/data"
+couchbase_server_index_path: "{{ couchbase_server_home_path }}/var/lib/couchbase/index"
+couchbase_server_log_path: "{{ couchbase_server_home_path }}/var/lib/couchbase/logs"
+couchbase_server_cbbackup_path: "/opt/couchbase_backups"
+couchbase_server_cbcollect_path: "/tmp"
+couchbase_server_tmpdir: "/tmp"
+#couchbase_server_tune_os: false
+#couchbase_server_firewall: false
+
+# Couchbase optional variables for several features
+# Below variables are needed to be set when adding couchbase slave node
+couchbase_server_master_name: ""
+couchbase_server_master_fqdn: ""

@@ -1,0 +1,28 @@
+---
+# task file for mysql
+- name: "MySQL | Create database"
+  mysql_db: name={{ zabbix_database_name }}
+            state=present
+  when: zabbix_database_creation
+  tags:
+    - zabbix-server
+    - database
+
+- name: "MySQL | Create database user"
+  mysql_user: name={{ zabbix_database_user }}
+              password={{ zabbix_database_password }}
+              priv={{ zabbix_database_name }}.*:ALL
+              state=present
+  when: zabbix_database_creation
+  tags:
+    - zabbix-server
+    - database
+
+- name: "MySQL | Importing schema file"
+  shell: "cd {{ datafiles_path }} && zcat create.sql.gz | mysql -u'{{ zabbix_database_user }}' -p'{{ zabbix_database_password }}' '{{ zabbix_database_name }}' && touch {{ zabbix_database_schema_done }}"
+  args:
+    creates: '{{ zabbix_database_schema_done }}'
+  when: zabbix_database_sqlload
+  tags:
+    - zabbix-server
+    - database

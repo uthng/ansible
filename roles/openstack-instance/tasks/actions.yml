@@ -1,0 +1,86 @@
+
+# Get a list of all existing instances
+- name: "OSI | Get list of all existing instances"
+  os_server_facts:
+    cloud: "{{ osi_cloud }}"
+    endpoint_type: "internal"
+  when: "{{ osi_my_instances is undefined or osi_my_instances == '' }}"
+  tags:
+    - instance-stop
+    - instance-start
+    - instance-suspend
+    - instance-resume
+    - instance-pause
+    - instance-unpause
+    - instance-list
+
+# Stop all running instances
+- name: "OSI | Stop all running instances"
+  os_server_actions:
+    cloud: "{{ osi_cloud }}"
+    endpoint_type: "internal"
+    action: "stop"
+    server: "{{ item }}"
+  with_items: "{{ (osi_my_instances + openstack_servers|default([])|map(attribute='name')|join(',')).split(',')|list }}"
+  tags:
+    - instance-stop
+
+# Start all running instances
+- name: "OSI | Start all running instances"
+  os_server_actions:
+    cloud: "{{ osi_cloud }}"
+    endpoint_type: "internal"
+    action: "start"
+    server: "{{ item }}"
+  with_items: "{{ (osi_my_instances + openstack_servers|default([])|map(attribute='name')|join(',')).split(',')|list }}"
+  tags:
+    - instance-start
+
+# Suspend all running instances
+- name: "OSI | Suspend all running instances"
+  os_server_actions:
+    cloud: "{{ osi_cloud }}"
+    endpoint_type: "internal"
+    action: "suspend"
+    server: "{{ item }}"
+  with_items: "{{ (osi_my_instances + openstack_servers|default([])|map(attribute='name')|join(',')).split(',')|list }}"
+  tags:
+    - instance-suspend
+
+# Resume all running instances
+- name: "OSI | Resume all running instances"
+  os_server_actions:
+    cloud: "{{ osi_cloud }}"
+    endpoint_type: "internal"
+    action: "resume"
+    server: "{{ item }}"
+  with_items: "{{ (osi_my_instances + openstack_servers|default([])|map(attribute='name')|join(',')).split(',')|list }}"
+  tags:
+    - instance-resume
+
+# Pause all running instances
+- name: "OSI | Pause all running instances"
+  os_server_actions:
+    cloud: "{{ osi_cloud }}"
+    endpoint_type: "internal"
+    action: "pause"
+    server: "{{ item }}"
+  with_items: "{{ (osi_my_instances + openstack_servers|default([])|map(attribute='name')|join(',')).split(',')|list }}"
+  tags:
+    - instance-pause
+
+# Unpause all running instances
+- name: "OSI | Unpause all running instances"
+  os_server_actions:
+    cloud: "{{ osi_cloud }}"
+    endpoint_type: "internal"
+    action: "unpause"
+    server: "{{ item }}"
+  with_items: "{{ (osi_my_instances + openstack_servers|default([])|map(attribute='name')|join(',')).split(',')|list }}"
+  tags:
+    - instance-unpause
+
+#- name: "OSI | List all existing instances"
+  #debug: var="{{ openstack_servers }}"
+  #tags:
+    #- instance-list

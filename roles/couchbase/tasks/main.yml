@@ -1,0 +1,37 @@
+---
+# tasks file for couchbase
+
+- name: Distribution specific variables
+  include_vars: "../defaults/{{ ansible_distribution | lower }}.yml"
+  tags:
+    - couchbase-variables
+
+- name: Tuning variables
+  include_vars: ../defaults/tuning.yml
+  tags:
+    - couchbase-variables
+
+# Include Debian for package installation
+- name: "Include Debian yaml"
+  include: "debian.yml"
+  when: couchbase_install_enabled and ansible_os_family == "Debian"
+  tags:
+    - couchbase-install
+
+- name: "Include configure yaml"
+  include: "configure.yml"
+  when: couchbase_configure_enabled
+  tags:
+    - couchbase-configure
+
+- name: "Include cluster init yaml"
+  include: "cluster_init.yml"
+  when: couchbase_cluster_init_enabled
+  tags:
+    - couchbase-cluster-init
+
+- name: "Include cluster add node yml"
+  include: "cluster_add_node.yml"
+  when: couchbase_cluster_add_node_enabled
+  tags:
+    - couchbase-cluster-add-node

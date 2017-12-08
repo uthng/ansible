@@ -1,0 +1,89 @@
+---
+# tasks file for proxy
+
+
+- name: Install apt proxy configuration file
+  template:
+    src: etc_apt_apt.conf.d_99proxy.j2
+    dest: /etc/apt/apt.conf.d/99proxy
+    owner: root
+    group: root
+    mode: 0644
+  when: proxy_apt == true
+  tags:
+    - proxy_apt
+
+- name: Install proxy file in /etc/profile.d for bash
+  template:
+    src: etc_profile.d_proxy.sh.j2
+    dest: /etc/profile.d/proxy.sh
+    owner: root
+    group: root
+    mode: 0644
+  when: proxy_bash == true
+  tags:
+    - proxy_bash
+
+- name: Configure env_keep for sudo
+  copy:
+    src: etc_sudoers.d_proxy
+    dest: /etc/sudoers.d/proxy
+    owner: root
+    group: root
+    mode: 0644
+  when: proxy_sudo == true
+  tags:
+    - proxy_sudo
+
+- name: Install proxy configuration file for PIP
+  template:
+    src: etc_pip.conf.j2
+    dest: /etc/pip.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: proxy_pip == true
+  tags:
+    - proxy_pip
+
+- name: Install curlrc for root
+  template:
+    src: root_curlrc.j2
+    dest: /root/.curlrc
+    owner: root
+    group: root
+    mode: 0644
+  when: proxy_curl == true
+  tags:
+    - proxy_curl
+
+- name: Create docker service folder in systemd
+  file:
+    dest: /etc/systemd/system/docker.service.d
+    owner: root
+    group: root
+    mode: 0644
+    state: directory
+  when: proxy_docker == true
+  tags:
+    - proxy_docker
+
+- name: Install systemd docker proxy configuration file
+  template:
+    src: etc_systemd_system_docker.service.d_http-proxy.conf.j2
+    dest: /etc/systemd/system/docker.service.d/http-proxy.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: proxy_docker == true
+  tags:
+    - proxy_docker
+
+- name: Restart docker daemon service
+  systemd:
+    name: docker
+    daemon_reload: yes
+    state: restarted
+  when: proxy_docker == true
+  tags:
+    - proxy_docker

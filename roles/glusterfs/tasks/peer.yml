@@ -1,0 +1,7 @@
+- debug: var=glusterfs_hosts_to_peer
+
+- name: "Peer | Add server to trusted pool"
+  shell: "gluster peer probe {{ item }}"
+  with_items: "{{ glusterfs_hosts_to_peer.split(',')|list|unique }}"
+  tags:
+    - glusterfs-peer

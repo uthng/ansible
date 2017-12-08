@@ -1,0 +1,56 @@
+- name: Make sure index directory exists
+  file: path={{ couchbase_server_index_path }} state=directory owner=couchbase group=couchbase mode=0770
+
+- name: Make sure data directory exists
+  file: path={{ couchbase_server_data_path }} state=directory owner=couchbase group=couchbase mode=0770
+
+- name: Make sure log directory exists
+  file: path={{ couchbase_server_log_path }} state=directory owner=couchbase group=couchbase mode=0770
+
+- name: Update user limits
+  copy: src=etc_security_limits.d_couchbase-server.conf dest=/etc/security/limits.d/couchbase-server.conf owner=root group=root mode=0644
+  tags:
+    - couchbase-configure
+
+- name: Install profile.d script
+  template: src=etc_profile.d_couchbase-server.sh.j2 dest=/etc/profile.d/couchbase-server.sh
+  tags:
+    - couchbase-configure
+
+#- name: Optimized settings for Couchbase Server data and index volumes
+  #mount: name={{ couchbase_server_mountpoint }} src={{ couchbase_server_partition }} opts={{ couchbase_server_mount_options }} fstype={{ couchbase_server_filesystem }} state=mounted
+  #when: couchbase_server_tune_os
+
+- name: Kernel settings dir
+  file: dest=/etc/sysctl.d state=directory
+  tags:
+    - couchbase-configure
+
+- name: Kernel settings config
+  template: src=etc_sysctl.d_couchbase-server.conf.j2 dest=/etc/sysctl.d/couchbase-server.conf owner=root group=root mode=0644
+  notify: Update kernel settings
+  tags:
+    - couchbase-configure
+
+- name: Configure log folder
+  lineinfile:
+    dest: "{{ couchbase_server_home_path }}/etc/couchbase/static_config"
+    regexp: '^{error_logger_mf_dir, '
+    line: '{error_logger_mf_dir, "{{ couchbase_server_log_path }}"}.'
+  tags:
+    - couchbase-configure
+
+- name: Initialize node
+  shell: "{{ couchbase_server_bin_path }}/couchbase-cli node-init -c {{ hostvars[inventory_hostname]['ansible_fqdn'] }}:{{ couchbase_server_admin_port }} --user={{ couchbase_server_admin }} --password={{ couchbase_server_password }} --cluster-init-username={{ couchbase_server_admin }} --node-init-hostname={{ hostvars[inventory_hostname]['ansible_fqdn'] }} --node-init-data-path={{ couchbase_server_data_path }} --node-init-index-path={{ couchbase_server_index_path }}"
+  tags:
+    - couchbase-configure
+
+- name: Restart couchbase server
+  service: name=couchbase-server state=restarted
+  tags:
+    - couchbase-configure
+
+#- name: Disable THP
+  #copy: src=rc.local dest=/etc/rc.local owner=root group=root mode=0644
+  #when: ansible_distribution_version != "12.04"
+  #notify: Source local settings

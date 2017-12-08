@@ -1,0 +1,14 @@
+---
+# tasks file for reprepro
+# Include debian playbook for package installation
+- name: "Include Debian playbook"
+  include: "Debian.yml"
+  when: ansible_os_family == "Debian"
+  tags:
+    - install
+
+# Include file configuring apt-mirror
+- name: "Include file configuring Reprepro"
+  include: reprepro.yml
+  tags:
+    - configure

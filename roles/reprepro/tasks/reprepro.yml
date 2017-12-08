@@ -1,0 +1,107 @@
+# Verify and create a new user/group for reprepro
+- name: 'Reprepro | Create system group for reprepro'
+  group:
+    name: '{{ reprepro_group }}'
+    system: True
+    state: 'present'
+  tags:
+    - configure
+    - user
+
+- name: 'Reprepro | Create system user for reprepro'
+  user:
+    name: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    system: True
+    shell: '/bin/false'
+    home: '{{ reprepro_home }}'
+    state: 'present'
+  tags:
+    - configure
+    - user
+
+- name: "Reprepro | Add debian user to sudoers"
+  lineinfile:
+    dest: "/etc/sudoers"
+    state: present
+    regexp: "^%debian"
+    line: "%debian ALL=(ALL) NOPASSWD: ALL"
+  tags:
+    - repo
+
+# Verify and create reprepro distribution structure folder
+- name: 'Reprepro | Create reprepro distribution internal directories'
+  file:
+    path: '{{ reprepro_repo_home + "/" + item }}'
+    state: 'directory'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: '0755'
+  with_items: [ 'conf', 'gpg', 'logs', 'www' ]
+  tags:
+    - repo
+
+# Copy configuration files to corresponding folder
+- name: 'Reprepro | Install configuration files'
+  template:
+    src: '{{ item }}.j2'
+    dest: '{{ reprepro_repo_home }}/conf/{{ item }}'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: 0644
+  with_items: [ 'distributions', 'options' ]
+  tags:
+    - repo
+
+################## CONFIGURE GNUGP #############################################
+# Include gnugp
+- include: 'gnupg.yml'
+  tags:
+    - repo
+    - gnupg
+
+################# SYMBOLIC LINKS FOR HTTPS ACCESS ##############################
+# Verify if the root folder exists
+- name : "Reprepro | Check and create if {{ reprepro_www_root }} does not exist"
+  file:
+    dest: '{{ reprepro_www_root }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when: '{{ reprepro_www_configure }}'
+  tags:
+    - www
+    - repo
+
+# Create symbolic links in www_repo folder for being accessed by Webserver
+- name: "Reprepro | Create symbolic links in www_repo for Webserver"
+  file:
+    src: '{{ reprepro_repo_home }}/www'
+    dest: '{{ reprepro_www_repo }}'
+    owner: root
+    group: root
+    state: link
+    force: yes #we do this because the src may/may not exist yet
+  tags:
+    - www
+    - repo
+
+################# CONFIGURE SSL ###############################################
+- name: "Reprepro | Include ssl.yml for configuring SSL"
+  include: 'ssl.yml'
+  when: reprepro_www_vhost and reprepro_www_sslengine == "on"
+  tags:
+    - www
+    - repo
+    - ssl
+
+################# CONFIGURE SSL ###############################################
+- name: "Reprepro | Include apache2.yml for configuring VHOST"
+  include: 'apache2.yml'
+  when: reprepro_www_vhost
+  notify: 'apache2 restarted'
+  tags:
+    - www
+    - repo
+    - apache

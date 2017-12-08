@@ -1,0 +1,40 @@
+---
+# defaults file for docker-activemq
+
+activemq_distribution: '{{ ansible_distribution | lower() }'
+activemq_release: '{{ ansible_distribution_release | lower() }}'
+activemq_distribution_release: '{{ activemq_distribution + "-" + activemq_release }}'
+
+activemq_version: '5.14.5'
+activemq_docker_image: 'docker-releases.infra.chrysalis.vpgrp.io/activemq-ha'
+activemq_docker_command: 'bin/activemq console'
+
+# These following variables are used for mouting volumes to container
+activemq_config: '/opt/activemq/conf'
+activemq_data: '/opt/activemq/data'
+
+# The following variables are used to generate activemq.xml
+activemq_broker_name: '{{ hostvars[inventory_hostname]["node_name"] | default(inventory_hostname) }}'
+
+
+# Memory control limit
+activemq_producer_flow_control: "false"
+activemq_producer_control_limit: '1gb'
+activemq_vmheap_size: '-Xms1G -Xmx24G'
+activemq_usage_memory: "16 gb"
+activemq_usage_store: "100 gb"
+activemq_usage_temp: "100 gb"
+
+activemq_schedule_support: "true"
+
+activemq_tcp: 61616
+#activemq_amq: 5672
+activemq_stomp: 61613
+#activemq_mqtt: 1883
+#activemq_ws: 61614
+activemq_ui: 8161
+
+activemq_bindip: '0.0.0.0'
+# 2 kinds of network brokers: static or dynamic (multicast)
+activemq_network_type: 'static'
+activemq_broker_masters: '{% set join_comma = joiner(",") %}{% if hostvars[inventory_hostname]["node_masters"] is defined and hostvars[inventory_hostname]["node_masters"] != "" %}{% set masters = hostvars[inventory_hostname]["node_masters"].split(",")|list|unique %}{% for master in masters %}{{ join_comma() }}tcp://{{ master }}:{{ activemq_tcp }}{% endfor %}{% endif %}'

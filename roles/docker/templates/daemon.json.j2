@@ -1,0 +1,32 @@
+{
+{% for key, value in docker_daemon_options.iteritems() recursive %}
+{# for key, value in opt.iteritems() recursive #}
+{#- Save loop depth for indent correctly -#}
+{%- set depth = loop.depth -%}
+{% if not loop.last %}{% set sep = "," %}{% else %}{% set sep = "" %}{% endif %}
+{% if value is string or value is number %}
+{% if value|string|lower == "true" or value|string|lower == "false" %}
+{{'  ' * (depth+1)}}"{{ key }}": {{ value|lower }}{{ sep }}
+{% else %}
+{{'  ' * (depth+1)}}"{{ key }}": "{{ value }}"{{ sep }}
+{% endif %}
+{% elif value is not mapping %}
+{# Case of array or list #}
+{% if value|length > 0 %}
+{{'  ' * (depth+1)}}"{{ key }}": [
+{%- for val in value %}
+{% if not loop.last %}{% set sep1 = "," %}{% else %}{% set sep1 = "" %}{% endif %}
+"{{ val }}"{{ sep1 }}
+{%- endfor -%}
+],
+{% endif %}{# if value|length #}
+{# Case of object #}
+{% else %}
+{{'  ' * (depth+1)}}"{{ key }}": {
+{{ loop(value.iteritems()) -}}
+{{'  ' * (depth+1)}}}
+{% endif %}{# if value type #}
+{# endfor #}{# loop key,value #}
+{% endfor %} {# opt loop #}
+
+}

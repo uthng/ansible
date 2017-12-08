@@ -1,0 +1,48 @@
+# Check if GnuPG key for repo exists
+- name: "GnuPG | Check if {{ reprepro_gpg_pub_key }} exists"
+  stat: path='{{ reprepro_gpg_pub_key }}'
+  register: gpg_key
+  tags:
+    - repo
+    - gnupg
+
+# Copy GnuPG key paramter file only when no gpg key for repo exists
+- name: 'GnuPG | Copy GnuPG key paramter file'
+  template:
+    src: 'gnupg_key_parameter_file.j2'
+    dest: '{{ reprepro_home }}/.gnupg_key_parameter_file'
+    owner: '{{ reprepro_user }}'
+    group: '{{ reprepro_group }}'
+    mode: 0644
+  when: not gpg_key.stat.exists
+  tags:
+    - repo
+    - gnupg
+
+# Generate systematically to have enought entropy to generate key
+- name: "GnuPG | Generate entroies"
+  shell: 'rngd -r /dev/urandom'
+  args:
+    creates: '/var/run/rngd.pid'
+  when: not gpg_key.stat.exists
+  tags:
+    - repo
+    - gnupg
+
+# Generate GNUGP key for repo only when no gpg key for repo exists
+- name: 'GnuPG | Generate GnuGP key'
+  shell: 'GNUPGHOME={{ reprepro_repo_home }}/gpg gpg --batch --gen-key {{ reprepro_home }}/.gnupg_key_parameter_file'
+  when: (reprepro_signed == "yes") and (not gpg_key.stat.exists)
+  become_user: '{{ reprepro_user }}'
+  tags:
+    - repo
+    - gnupg
+
+# Export GnuGP public key only when no gpg key for repo exists
+- name: 'GnuPG | Export GnuGP public key'
+  shell: 'GNUPGHOME={{ reprepro_repo_home }}/gpg gpg --armor --output {{ reprepro_gpg_pub_key }} --export {{ reprepro_gpg_email }}'
+  when: (reprepro_signed == "yes") and (not gpg_key.stat.exists)
+  become_user: '{{ reprepro_user }}'
+  tags:
+    - repo
+    - gnupg

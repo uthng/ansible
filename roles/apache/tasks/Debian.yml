@@ -1,0 +1,6 @@
+# Install package Apache
+- name: "Debian | Install Apache2 package"
+  apt: pkg=apache2
+       state=present
+  tags:
+    - install

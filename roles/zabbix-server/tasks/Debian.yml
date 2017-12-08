@@ -1,0 +1,78 @@
+---
+
+- name: "Debian | Set some facts for Zabbix 3.0"
+  set_fact:
+    apache_log: apache2
+    datafiles_path: /usr/share/doc/zabbix-server-{{ zabbix_database_type }}
+  tags:
+    - zabbix-server
+    - init
+    - config
+
+- name: "Debian | Install repository Debian"
+  apt_repository: repo="{{ zabbix_server_repo_url }}"
+                  state=present
+  when: ansible_distribution == "Debian" and zabbix_server_repo
+  tags:
+    - zabbix-server
+    - init
+    - config
+
+- name: "Debian | Install gpg key"
+  apt_key: id=79EA5ED4
+           url=http://repo.zabbix.com/zabbix-official-repo.key
+  when: zabbix_server_repo and zabbix_server_repo_key
+  tags:
+    - zabbix-server
+    - init
+    - config
+
+- name: "Debian | Install zabbix-server-{{ zabbix_database_type }}"
+  apt: pkg=zabbix-server-{{ zabbix_database_type }}
+       state=present
+       update_cache=yes
+       allow_unauthenticated=yes
+  tags:
+    - zabbix-server
+    - init
+
+- name: "Debian | Install zabbix-frontend"
+  apt:  pkg=zabbix-frontend-php
+        state=present
+        update_cache=yes
+        cache_valid_time=3600
+        allow_unauthenticated=yes
+  when: zabbix_server_frontend
+  tags:
+    - zabbix-server
+    - init
+    - config
+
+# Install python-mysqldb for Ansible module mysql_db
+- name: "Debian | Install Ansible module dependencies"
+  apt: name=python-mysqldb
+       state=present
+       allow_unauthenticated=yes
+  when: zabbix_database_creation and zabbix_database_type == "mysql"
+  tags:
+    - zabbix-server
+    - init
+
+# Include SSL for Apache 2
+- name: "Debian | Install and configure SSL"
+  include: "ssl.yml"
+  tags:
+    - zabbix-server
+    - init
+    - config
+    - ssl
+    - apache
+
+# Include VHOST for Apache with SSL
+- name: "Debian | Configure Apache VHOST"
+  include: "apache2.yml"
+  tags:
+    - zabbix-server
+    - init
+    - config
+    - apache

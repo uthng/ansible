@@ -1,0 +1,41 @@
+# {{ ansible_managed }}
+export LC_ALL=C
+
+# COMMON CINDER ENVS
+export CINDER_ENDPOINT_TYPE={{ config_cinder_endpoint_type }}
+
+# COMMON NOVA ENVS
+export NOVA_ENDPOINT_TYPE={{ config_nova_endpoint_type }}
+
+# COMMON OPENSTACK ENVS
+export OS_ENDPOINT_TYPE={{ config_os_endpoint_type }}
+export OS_USERNAME={{ config_os_username }}
+export OS_PASSWORD={{ config_os_password }}
+export OS_PROJECT_NAME={{ config_os_tenant_name }}
+export OS_TENANT_NAME={{ config_os_tenant_name }}
+export OS_AUTH_URL={{ config_os_auth_url }}
+export OS_NO_CACHE=1
+export OS_USER_DOMAIN_NAME={{ config_os_user_domain_name }}
+export OS_PROJECT_DOMAIN_NAME={{ config_os_project_domain_name }}
+export OS_REGION_NAME={{ config_os_region_name }}
+
+# For openstackclient
+{% if config_os_auth_url.endswith('v3') %}
+export OS_IDENTITY_API_VERSION=3
+export OS_AUTH_VERSION=3
+{% else %}
+export OS_IDENTITY_API_VERSION=2.0
+export OS_AUTH_VERSION=2
+{% endif %}
+
+{% if config_insecure | bool %}
+# Convenience Aliases for Self-Signed Certs
+alias cinder='cinder --insecure'
+alias glance='glance --insecure'
+alias heat='heat --insecure'
+alias keystone='keystone --insecure'
+alias neutron='neutron --insecure'
+alias nova='nova --insecure'
+alias openstack='openstack --insecure'
+alias swift='swift --insecure'
+{% endif %}

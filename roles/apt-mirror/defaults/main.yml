@@ -1,0 +1,246 @@
+---
+# defaults file for apt-mirror
+######################## DISTRIBUTION #################################
+apt_mirror_distribution: '{{ ansible_distribution | lower() }}'
+apt_mirror_release: '{{ ansible_distribution_release | lower() }}'
+apt_mirror_distribution_release: '{{ apt_mirror_distribution + "-" + apt_mirror_release }}'
+
+######################## GENERAL VARIABLES #############################
+# Apt-mirror configuration variables
+apt_mirror_base_path: '/var/spool/apt-mirror' # home directory
+apt_mirror_repo_update: False
+
+apt_mirror_www_root: '/usr/share/repos'
+
+# VHOST
+apt_mirror_www_vhost: True
+apt_mirror_www_openssl_conf: '/etc/ssl/openssl_atos.cnf'
+apt_mirror_www_vhost_conf: 'repos.conf'
+apt_mirror_www_interface: 'eth0'
+apt_mirror_www_port: '4445'
+apt_mirror_www_servername: 'repos.cis.atos.net'
+apt_mirror_www_serveralias: [ 'repos.cis.atos.net' ]
+apt_mirror_www_serveradmin: 'repos.cis@atos.net'
+apt_mirror_www_sslengine: 'on'
+apt_mirror_www_sslcertificatefile: '/etc/ssl/certs/zabbix.crt'
+apt_mirror_www_sslcertificatekeyfile: '/etc/ssl/private/zabbix.key'
+apt_mirror_www_authuserfile: '/etc/apache2/users_repo'
+apt_mirror_www_authtype: 'Basic'
+apt_mirror_www_authname: 'Repo'
+apt_mirror_www_authuser: 'idcrepo'
+apt_mirror_www_authuserpasswd: 'WeAreiDC!'
+
+
+######################## CRONTAB #######################################
+# TODO: schedule apt-mirror with crontab
+
+######################## MIRROR CONFIGURATION ##########################
+# Variables for configuration file mirror.list
+apt_mirror_conf_file: '/etc/apt/mirror.list'
+apt_mirror_defaultarch: 'amd64'
+apt_mirror_run_postmirror: 0
+apt_mirror_nthreads: 20
+apt_mirror_tilde: 0
+
+# Mirror lists
+apt_mirror_url_repository_list: '{{ apt_mirror_repos[apt_mirror_distribution_release] | selectattr("www_folder", "defined") | list | sort(attribute="url_repository") | map(attribute="url_repository") | map("regex_replace", "^(http|https|ftp)://", "") | list | unique }}'
+apt_mirror_www_folder_list: '{{ apt_mirror_repos[apt_mirror_distribution_release] | selectattr("www_folder", "defined") | list | sort(attribute="url_repository") | map(attribute="www_folder") | list | unique }}'
+
+apt_mirror_repos:
+  'debian-jessie':
+    # DEBIAN JESSIE MIRROR
+    - type_archive: 'deb-amd64'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-i386'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-armhf'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-arm64'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    # DEBIAN JESSIE BACKPORTS MIRROR
+    - type_archive: 'deb-amd64'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie-backports'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-i386'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie-backports'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-armhf'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie-backports'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-arm64'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie-backports'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    # DEBIAN JESSIE UPDATES MIRROR
+    - type_archive: 'deb-amd64'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie-updates'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-i386'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie-updates'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-armhf'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie-updates'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-arm64'
+      url_repository: 'http://ftp.fr.debian.org/debian/'
+      distribution: 'jessie-updates'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    # DEBIAN SECURITY MIRROR
+    - type_archive: 'deb-amd64'
+      url_repository: 'http://security.debian.org/'
+      distribution: 'jessie'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian-security' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-i386'
+      url_repository: 'http://security.debian.org/'
+      distribution: 'jessie'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian-security' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-armhf'
+      url_repository: 'http://security.debian.org/'
+      distribution: 'jessie'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian-security' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-arm64'
+      url_repository: 'http://security.debian.org/'
+      distribution: 'jessie'
+      components: [ 'main', 'contrib', 'non-free' ]
+      www_folder: 'debian-security' # symbolic link in www root directory : /var/www/html by defaut
+
+    # UBUNTU TRUSTY MIRROR
+    - type_archive: 'deb-amd64'
+      url_repository: 'http://fr.archive.ubuntu.com/ubuntu/'
+      distribution: 'trusty'
+      components: [ 'main', 'universe', 'restricted', 'multiverse' ]
+      www_folder: 'ubuntu' # symbolic link in www root directory : /var/www/html by defaut
+
+    # UBUNTU UPDATES MIRROR
+    - type_archive: 'deb-amd64'
+      url_repository: 'http://fr.archive.ubuntu.com/ubuntu/'
+      distribution: 'trusty-updates'
+      components: [ 'main', 'universe', 'restricted', 'multiverse' ]
+      www_folder: 'ubuntu' # symbolic link in www root directory : /var/www/html by defaut
+
+    # UBUNTU BACKPORT MIRROR
+    - type_archive: 'deb-adm64'
+      url_repository: 'http://fr.archive.ubuntu.com/ubuntu/'
+      distribution: 'trusty-backports'
+      components: [ 'main', 'universe', 'restricted', 'multiverse' ]
+      www_folder: 'ubuntu' # symbolic link in www root directory : /var/www/html by defaut
+
+    # UBUNTU SECURITY MIRROR
+    - type_archive: 'deb-amd64'
+      url_repository: 'http://security.ubuntu.com/ubuntu/'
+      distribution: 'trusty-security'
+      components: [ 'main', 'universe', 'restricted', 'multiverse' ]
+      www_folder: 'ubuntu-security' # symbolic link in www root directory : /var/www/html by defaut
+
+    # ZABBIX 3.0  MIRROR
+    - type_archive: 'deb-amd64'
+      url_repository: 'http://repo.zabbix.com/zabbix/3.0/debian/'
+      distribution: 'jessie'
+      components: [ 'main' ]
+      www_folder: 'zabbix30-debian' # symbolic link in www root directory : /var/www/html by defaut
+ 
+    # VIRTUALBOX MIRROR
+    - type_archive: 'deb'
+      url_repository: 'http://download.virtualbox.org/virtualbox/debian'
+      distribution: 'jessie'
+      components: [ 'contrib' ]
+      www_folder: 'virtualbox-debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-i386'
+      url_repository: 'http://download.virtualbox.org/virtualbox/debian'
+      distribution: 'jessie'
+      components: [ 'contrib' ]
+      www_folder: 'virtualbox-debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    # SALTSTACK MIRROR
+    - type_archive: 'deb'
+      url_repository: 'http://debian.saltstack.com/debian'
+      distribution: 'jessie-saltstack'
+      components: [ 'main' ]
+      www_folder: 'saltstack-debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-i386'
+      url_repository: 'http://debian.saltstack.com/debian'
+      distribution: 'jessie-saltstack'
+      components: [ 'main' ]
+      www_folder: 'saltstack-debian' # symbolic link in www root directory : /var/www/html by defaut
+
+    - type_archive: 'deb-armhf'
+      url_repository: 'http://debian.saltstack.com/debian'
+      distribution: 'jessie-saltstack'
+      components: [ 'main' ]
+      www_folder: 'saltstack-debian' # symbolic link in www root directory : /var/www/html by defaut
+
+      # Do not distribution and components for clean archive type
+      # because a test defined on it to be performed to generate
+      # mirror.list
+    - type_archive: 'clean'
+      url_repository: 'http://ftp.fr.debian.org/debian'
+      #distribution: ''
+      #components: []
+
+    - type_archive: 'clean'
+      url_repository: 'http://security.debian.org/'
+
+    - type_archive: 'clean'
+      url_repository: 'http://fr.archive.ubuntu.com/ubuntu/'
+
+    - type_archive: 'clean'
+      url_repository: 'http://security.ubuntu.com/ubuntu/'
+
+    - type_archive: 'clean'
+      url_repository: 'http://repo.zabbix.com/zabbix/3.0/debian/'
+
+    - type_archive: 'clean'
+      url_repository: 'http://download.virtualbox.org/virtualbox/debian'
+      #distribution:
+      #components: []
+
+    - type_archive: 'clean'
+      url_repository: 'http://debian.saltstack.com/debian'
+      #distribution: ''
+      #components: []

@@ -1,0 +1,13 @@
+<VirtualHost {{ hostvars[inventory_hostname]['ansible_' + zabbix_apache_vhost_interface]['ipv4']['address'] }}:{{ zabbix_apache_vhost_port }}>
+	DocumentRoot /usr/share/zabbix
+
+  ServerName {{ zabbix_apache_vhost_servername }}
+  {% for alias in zabbix_apache_vhost_serveralias %}
+  ServerAlias {{ alias }}
+  {% endfor %}
+  ServerAdmin {{ zabbix_apache_vhost_serveradmin }}
+
+	SSLEngine {{ zabbix_apache_vhost_sslengin }}
+  SSLCertificateFile    {{ zabbix_apache_vhost_sslcert }}
+  SSLCertificateKeyFile {{ zabbix_apache_vhost_sslkey }}
+</VirtualHost>

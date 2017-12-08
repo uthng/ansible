@@ -1,0 +1,22 @@
+# Copy the openssl conf to generate new certificat
+- name: "SSL | Copy openssl.conf"
+  template: src=openssl.cnf
+            dest='{{ zabbix_apache_vhost_openssl_conf }}'
+  when: zabbix_server_vhost and zabbix_server_frontend
+  tags:
+    - zabbix-server
+    - init
+    - config
+    - ssl
+
+# Generate un certificat for SSL only if it does not exist
+- name: "SSL | Generate certificat SSL"
+  shell: 'openssl req -config {{ zabbix_apache_vhost_openssl_conf }} -new -x509 -days 1825 -newkey rsa:4096 -nodes -out {{ zabbix_apache_vhost_sslcert }} -keyout {{ zabbix_apache_vhost_sslkey }}'
+  args:
+    creates: '{{ zabbix_apache_vhost_sslcert }}'
+  when: zabbix_server_vhost and zabbix_server_frontend
+  tags:
+    - zabbix-server
+    - config
+    - init
+    - ssl

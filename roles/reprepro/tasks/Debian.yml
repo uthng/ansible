@@ -1,0 +1,24 @@
+# Install package reprepro
+- name: "Debian | Install reprepro package"
+  apt: pkg=reprepro
+       state=present
+  tags:
+    - install
+
+- name: "Debian | Install Apache2"
+  apt: pkg=apache2
+       state=present
+  tags:
+    - install
+
+# Install rng-tools for generate entropies
+- name: "Debian | Install rng-tools"
+  apt: pkg=rng-tools state=present
+  tags:
+    - install
+
+# Install python-passlib for ansible module htpasswd
+- name: "Debian | Install python-passlib"
+  apt: pkg=python-passlib state=present
+  tags:
+    - install

@@ -1,0 +1,21 @@
+---
+# tasks file for glusterfs
+#
+# Include Debian for package installation
+- name : "Include Debian yaml"
+  include: "debian.yml"
+  when: glusterfs_install_enabled and ansible_os_family == "Debian"
+  tags:
+    - glusterfs-install
+
+- name: "Include peer operations"
+  include: "peer.yml"
+  when: glusterfs_peer_enabled
+  tags:
+    - glusterfs-peer
+
+- name: "Include volume operations"
+  include: "volume.yml"
+  when: glusterfs_volume_enabled
+  tags:
+    - glusterfs-volume

@@ -1,0 +1,121 @@
+---
+
+# Check if the apt-mirror directory (home) exists
+- name: "Apt-mirror | Check if {{ apt_mirror_base_path }} exists with right permissions"
+  file:
+    dest: '{{ apt_mirror_base_path }}'
+    state: 'directory'
+    owner: 'apt-mirror'
+    group: 'apt-mirror'
+    mode: 0755
+    recurse: 'yes'
+  tags:
+    - configure
+
+# Check if apt_mirror_conf_file exists
+- name: "Check if {{ apt_mirror_conf_file }} exists"
+  stat: path={{ apt_mirror_conf_file }}
+  register: conf
+  tags:
+    - configure
+
+# Backup apt_mirror_conf_file
+- name: "Backup {{ apt_mirror_conf_file }}"
+  command: 'mv {{ apt_mirror_conf_file }} {{ apt_mirror_conf_file }}.bak'
+  when: conf.stat.exists
+  tags:
+    - configure
+
+# Install apt-mirror configuration file
+- name: "Apt-mirror | Install configuration file mirror.list"
+  template:
+    src: 'mirror.list.j2'
+    dest: '{{ apt_mirror_conf_file }}'
+    owner: 'root'
+    group: 'root'
+    mode: 0644
+  notify: 'apt-mirror update'
+  tags:
+    - configure
+    - update
+
+# Create symbolic links in www_root folder for being accessed by Webserver
+- name: "Apt-mirror | Create {{ apt_mirror_www_root }} if not exists"
+  file:
+    dest: '{{ apt_mirror_www_root }}'
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  tags:
+    - www
+    - configure
+
+# Remove all symbolic links in www_root folder in case that www_root has been existing
+- name: "Apt-mirror | Remove all subfolders inside {{ apt_mirror_www_root }}"
+  shell: "rm -rf {{ apt_mirror_www_root }}/*"
+  tags:
+    - www
+    - configure
+
+# Create symbolic links in www_root folder for being accessed by Webserver
+- name: "Apt-mirror | Create symbolic links in www_root for Webserver"
+  file:
+    src: '{{ apt_mirror_base_path }}/mirror/{{ item.0 }}'
+    dest: '{{ apt_mirror_www_root }}/{{ item.1 }}'
+    owner: root
+    group: root
+    state: link
+    force: yes #we do this because the src may/may not exist yet
+  with_together:
+    - '{{ apt_mirror_url_repository_list }}'
+    - '{{ apt_mirror_www_folder_list }}'
+  tags:
+    - www
+    - configure
+
+################# CONFIGURE SSL ###############################################
+- name: "Apt-mirror | Include ssl.yml for configuring SSL"
+  include: 'ssl.yml'
+  when: apt_mirror_www_vhost and apt_mirror_www_sslengine == "on"
+  tags:
+    - www
+    - configure
+    - ssl
+
+################# CONFIGURE SSL ###############################################
+- name: "Apt-mirror | Include apache2.yml for configuring VHOST"
+  include: 'apache2.yml'
+  when: apt_mirror_www_vhost
+  notify: 'apache2 restarted'
+  tags:
+    - www
+    - configure
+    - apache
+
+# DEBUG Section
+#- name: "Setfacts"
+#  set_fact:
+#    list_repo: '{{ apt_mirror_repos[apt_mirror_distribution_release] | selectattr("www_folder", "defined") | list | sort(attribute="url_repository") | map(attribute="www_folder") | list | unique }}'
+#  tags:
+#    - test
+
+# - debug: msg='{{ apt_mirror_url_repository_list }}'
+#   tags:
+#     - test
+#
+# - debug: msg='{{ apt_mirror_www_folder_list }}'
+#   tags:
+#     - test
+
+# - debug: msg='{{ item|replace("http://", "")|replace("ftp://", "") }}'
+#   with_items: '{{ apt_mirror_url_repository_list }}'
+#   tags:
+#     - test
+
+# - debug: msg='ln -s {{ apt_mirror_base_path }}/mirror/{{ item.0 }} {{ apt_mirror_www_root }}/{{ item.1 }}'
+#   with_together:
+#     - '{{ apt_mirror_url_repository_list }}'
+#     - '{{ apt_mirror_www_folder_list }}'
+#   tags:
+#     - test

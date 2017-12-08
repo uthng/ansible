@@ -1,0 +1,51 @@
+---
+# defaults file for swarm-stack
+#
+stack_docker_compose_folder: "{{ ansible_env.HOME }}/docker-compose"
+stack_docker_compose_file: "{{ stack_docker_compose_folder }}/{{ stack_name }}.yml"
+
+stack_name: stack
+
+stack_service_list: []
+  #- name: portainer
+    #enabled: true
+    #image: "portainer/portainer"
+    #ports:
+      #- 9000:9000
+    #depends: []
+    #networks:
+      #- tools_base
+    #deploy:
+      #mode: replicated
+      #replicas: 1
+      #placement:
+        #constraints:
+          #- node.role == manager
+      #labels: []
+
+  #- name: nexus
+    #enabled: true
+    #image: "sonatype/nexus3"
+    #ports:
+      #- 8081:8081
+    #envs: []
+    #depends: []
+    #networks:
+      #- tools_base
+      #- toto
+    #deploy:
+      #mode: replicated
+      #replicas: 1
+      #constraints: []
+      #labels: []
+
+stack_with_registry_auth: False
+
+stack_command_deploy: "{% if (stack_with_registry_auth) %}docker stack deploy --with-registry-auth{% else %}docker stack deploy{% endif %}"
+
+stack_name_list: "{{ stack_service_list | selectattr('service', 'defined') | list | map(attribute='service') | list | unique }}"
+stack_network_pipe: "{% set pipe = joiner('|') %}{% for service in stack_service_list %}{% if (service.networks is defined) %}{% for net in service.networks %}{{ pipe() }}{{ net }}{% endfor %}{% endif %}{% endfor %}"
+stack_network_list: "{{ stack_network_pipe.split('|')|list|unique }}"
+
+stack_secret_pipe: "{% set pipe = joiner('|') %}{% for service in stack_service_list %}{% if (service.secrets is defined) %}{% for secret in service.secrets %}{{ pipe() }}{{ secret }}{% endfor %}{% endif %}{% endfor %}"
+stack_secret_list: "{{ stack_secret_pipe.split('|')|list|unique }}"

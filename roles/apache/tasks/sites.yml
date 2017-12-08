@@ -1,0 +1,10 @@
+- name: "Apache Site | Install vhost configuration file"
+  template:
+    src: 'site.conf.j2'
+    dest: '/etc/apache2/sites-available/{{ item }}.conf'
+    owner: root
+    group: root
+    mode: 0644
+  with_items: '{{ apache_vhosts_to_install }}'
+  tags:
+    - site

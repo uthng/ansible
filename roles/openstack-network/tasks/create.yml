@@ -1,0 +1,52 @@
+
+# Create networks
+- name: "Create networks"
+  os_network:
+    cloud: '{{ osn_cloud }}'
+    endpoint_type: 'internal'
+    name: '{{ item.name }}'
+    project: '{{ item.project_name }}'
+    state: 'present'
+    external: '{{ item.external }}'
+    shared: '{{ item.shared }}'
+    provider_network_type: '{{ item.network_type }}'
+    provider_physical_network: '{{ item.physical_network | default(omit) }}'
+    provider_segmentation_id: '{{ item.segmentation_id | default(omit) }}'
+  with_items: '{{ osn_networks }}'
+  tags:
+    - network-create
+    - network-update
+
+# Create subnet for each network
+- name: "Create subnets"
+  os_subnet:
+    cloud: '{{ osn_cloud }}'
+    endpoint_type: "internal"
+    name: '{{ item.name }}'
+    network_name: '{{ item.network_name }}'
+    state: 'present'
+    cidr: '{{ item.address }}'
+    gateway_ip: '{{ item.gateway_ip | default(omit) }}'
+    allocation_pool_start: "{{ item.allocation_pools.split(',')[0] | default(omit) }}"
+    allocation_pool_end: "{{ item.allocation_pools.split(',')[1] | default(omit) }}"
+    enable_dhcp: '{{ item.dhcp }}'
+    dns_nameservers: "{{ item.dns_nameservers.split(',') | list | default(omit) }}"
+    host_routes: '{{ item.host_routes | default(omit) }}'
+  with_items: '{{ osn_subnets }}'
+  tags:
+    - subnet-create
+    - subnet-update
+
+- name: "Create routers to link networks"
+  os_router:
+    cloud: "{{ osn_cloud }}"
+    endpoint_type: "internal"
+    name: '{{ item.name }}'
+    state: 'present'
+    network: "{{ item.external_network | default(omit) }}"
+    interfaces: "{{ item.internal_networks | default(omit) }}"
+  with_items: '{{ osn_routers }}'
+  tags:
+    - router-create
+    - router-update
+

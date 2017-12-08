@@ -1,0 +1,25 @@
+---
+# tasks file for u.docker
+
+# Include Debian for package installation
+- name : "Include Debian yaml"
+  include: "install_docker_engine_debian.yml"
+  when: docker_install_engine and ansible_os_family == "Debian"
+  tags:
+    - docker-engine-install
+
+- include: "configure_docker_engine.yml"
+  when: docker_install_engine
+  tags:
+    - docker-engine-install
+    - docker-engine-configure
+
+- include: "configure_docker_daemon.yml"
+  when: docker_configure_daemon
+  tags:
+    - docker-daemon-configure
+
+- include: "install_docker_compose.yml"
+  when: docker_install_compose
+  tags:
+    - docker-compose-install

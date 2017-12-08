@@ -1,0 +1,77 @@
+---
+# defaults file for reprepro
+######################## DISTRIBUTION ##########################################
+reprepro_distribution: '{{ ansible_distribution | lower() }}'
+reprepro_release: '{{ ansible_distribution_release | lower() }}'
+reprepro_distribution_release: '{{ reprepro_distribution + "-" + reprepro_release }}'
+
+################ REPREPRO GENERAL SETTINGS #####################################
+reprepro_user: 'reprepro'
+reprepro_group: 'reprepro'
+reprepro_home: '/var/spool/reprepro'
+
+reprepro_repo_name: 'idc'
+reprepro_repo_home: '{{ reprepro_home }}/{{ reprepro_repo_name }}'
+reprepro_signed: 'yes'
+# Settings for GPG key used to sign reprepro repository
+reprepro_gpg_key_type: 'RSA'
+reprepro_gpg_key_length: '4096'
+reprepro_gpg_name: 'ATOS CIS Repos Automatic Signing Key'
+reprepro_gpg_email: 'atos.cis@atos.net'
+reprepro_gpg_expire_days: '{{ (365 * 3) }}'
+reprepro_gpg_pub_key: '{{ reprepro_repo_home }}/www/{{ reprepro_repo_name }}-pub.gpg'
+
+################# WEBSERVER SETTINGS ###########################################
+reprepro_www_configure: True
+reprepro_www_root: '/usr/share/repos'
+reprepro_www_repo: '{{ reprepro_www_root }}/{{ reprepro_repo_name }}'
+
+# VHOST
+reprepro_www_vhost: True
+reprepro_www_openssl_conf: '/etc/ssl/openssl_atos.cnf'
+reprepro_www_vhost_conf: 'repos.conf'
+reprepro_www_interface: 'eth0'
+reprepro_www_port: '4445'
+reprepro_www_servername: 'repos.cis.atos.net'
+reprepro_www_serveralias: [ 'repos.cis.atos.net' ]
+reprepro_www_serveradmin: 'repos.cis@atos.net'
+reprepro_www_sslengine: 'on'
+reprepro_www_sslcertificatefile: '/etc/ssl/certs/zabbix.crt'
+reprepro_www_sslcertificatekeyfile: '/etc/ssl/private/zabbix.key'
+reprepro_www_authuserfile: '/etc/apache2/users_repo'
+reprepro_www_authtype: 'Basic'
+reprepro_www_authname: 'Repo'
+reprepro_www_authuser: 'idcrepo'
+reprepro_www_authuserpasswd: 'WeAreiDC!'
+
+################ REPO LIST #####################################################
+
+reprepro_repos:
+  'idc':
+    - Origin: 'iDeviceCloud'
+      Label: 'idc-testing'
+      Suite: 'testing'
+      Codename: 'idc-testing'
+      Architectures: 'i386 amd64 arm64 armhf source'
+      Components: 'main'
+      UDebComponents: 'main'
+      Description: 'IDC testing packages for Debian Jessie 8.3 (with updates and security)'
+      Contents: '.gz .bz2'
+      Tracking: 'keep'
+      NotAutomatic: 'yes'
+      SignWith: '{{ reprepro_signed }}'
+      Log: 'packages.idc-testing.log'
+
+    - Origin: 'iDeviceCloud'
+      Label: 'idc-stable'
+      Suite: 'stable'
+      Codename: 'idc-stable'
+      Architectures: 'i386 amd64 arm64 armhf source'
+      Components: 'main'
+      UDebComponents: 'main'
+      Description: 'IDC stable packages for Debian Jessie 8.3 (with updates and security)'
+      Contents: '.gz .bz2'
+      Tracking: 'keep'
+      NotAutomatic: 'yes'
+      SignWith: '{{ reprepro_signed }}'
+      Log: 'packages.idc-stable.log'

@@ -1,0 +1,11 @@
+---
+# tasks file for openstack-instance
+
+- include: "cleanup.yml"
+  when: "{{ osi_task_cleanpup | bool }}"
+
+- include: "populate.yml"
+  when: "{{ osi_task_populate | bool }}"
+
+- include: "actions.yml"
+  when: "{{ osi_task_actions | bool }}"

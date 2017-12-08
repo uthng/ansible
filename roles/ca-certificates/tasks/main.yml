@@ -1,0 +1,15 @@
+---
+# tasks file for ca-certificates
+
+- name: Copy all CA certificates
+  copy:
+    src='{{ item }}'
+    dest='/usr/local/share/ca-certificates/'
+    owner='root'
+    group='root'
+  with_fileglob:
+    - "*"
+
+- name: Update CA certificates
+  shell: /usr/sbin/update-ca-certificates
+

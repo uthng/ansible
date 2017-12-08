@@ -1,0 +1,65 @@
+- name: Copy DHCP onfiguration
+  template:
+    src: "dhcpd-{{ hostvars[inventory_hostname].node_role }}.conf.j2"
+    dest: /etc/dhcp/dhcpd.conf
+  tags:
+    - dhcpd-master-configure
+    - dhcpd-slave-configure
+
+- name: Copy DHCP subnets configuration
+  template:
+    src: dhcpd-subnet.conf.j2
+    dest: /etc/dhcp/dhcpd-subnet.conf
+  tags:
+    - dhcpd-master-configure
+    - dhcpd-slave-configure
+
+- block:
+  - name: Copy sync script
+    copy:
+      src: dhcpd-sync.sh
+      dest: /etc/dhcp/dhcpd-sync.sh
+      mode: u=rwx,g=rx,o=rx
+    tags:
+      - dhcpd-master-configure
+
+  - name: Generate ssh key
+    user:
+      name: root
+      generate_ssh_key: yes
+    tags:
+      - dhcpd-master-configure
+
+  - name: Register ssh public key
+    shell: cat /root/.ssh/id_rsa.pub
+    register: id_rsa_pub_master
+    tags:
+      - dhcpd-master-configure
+      - dhcpd-slave-configure
+  when: dhcpd_ha == true and hostvars[inventory_hostname].node_role == "master"
+
+- block:
+  - name: Add dhcpd slave to known_hosts
+    shell: ssh-keyscan -H {{ dhcpd_slave }} >> /root/.ssh/known_hosts
+    tags:
+      - dhcpd-master-configure
+
+  - name: Run sync script every 10 minutes
+    cron:
+      name: "Synchronize dhcpd subnets configuration"
+      minute: "10"
+      job: /etc/dhcp/dhcpd-sync.sh
+    tags:
+      - dhcpd-master-configure
+  when: dhcpd_slave is defined and dhcpd_slave != "" and hostvars[inventory_hostname].node_role == "master"
+
+
+- name: Add master's ssh public key
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ hostvars[dhcpd_master].id_rsa_pub_master.stdout }}"
+  when: dhcpd_ha == true and hostvars[inventory_hostname].node_role == "slave"
+  tags:
+    - dhcpd-master-configure
+    - dhcpd-slave-configure

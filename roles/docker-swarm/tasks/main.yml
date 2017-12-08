@@ -1,0 +1,9 @@
+---
+# tasks file for docker-swarm
+- name: Setup docker swarm cluster in normal mode
+  include: swarm_normal.yml
+  when: swarm_cluster_mode == 'normal'
+
+- name: Setup docker swarm cluster in container mode
+  include: swarm_container.yml
+  when: swarm_cluster_mode == 'container'

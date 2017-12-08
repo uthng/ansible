@@ -1,0 +1,58 @@
+
+# Get a list of all routers previously created
+- name: "OSN | Get all existing routers"
+  os_routers_facts:
+    cloud: "{{ osn_cloud }}"
+    endpoint_type: "internal"
+  tags:
+    - router-reinit
+    - network-reinit
+
+- name: "OSN | Remove all existing routers"
+  os_router:
+    cloud: "{{ osn_cloud }}"
+    endpoint_type: "internal"
+    state: absent
+    name: "{{ item.name }}"
+  with_items: '{{ openstack_routers }}'
+  tags:
+    - router-reinit
+    - network-reinit
+
+- name: "OSN | Get all existing subnets"
+  os_subnets_facts:
+    cloud: '{{ osn_cloud }}'
+    endpoint_type: 'internal'
+  tags:
+    - subnet-reinit
+    - network-reinit
+
+- name: "OSN | Remove all existing subnets"
+  os_subnet:
+    cloud: '{{ osn_cloud }}'
+    endpoint_type: 'internal'
+    state: 'absent'
+    name: '{{ item.name }}'
+  with_items: '{{ openstack_subnets }}'
+  tags:
+    - subnet-reinit
+    - network-reinit
+
+- name: "OSN | Get all existing networks"
+  os_networks_facts:
+    cloud: '{{ osn_cloud }}'
+    endpoint_type: 'internal'
+  tags:
+    - network-reinit
+    - network-reinit
+
+- name: "OSN | Remove all existing networks"
+  os_network:
+    cloud: '{{ osn_cloud }}'
+    endpoint_type: 'internal'
+    state: 'absent'
+    name: '{{ item.name }}'
+  with_items: '{{ openstack_networks }}'
+  tags:
+    - network-reinit
+

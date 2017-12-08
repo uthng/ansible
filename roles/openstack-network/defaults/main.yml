@@ -1,0 +1,79 @@
+---
+# defaults file for atos.cis.openstacki-network
+#
+
+osn_cloud: "default"
+
+# Network list to create
+osn_networks:
+  - name: "external"
+    project_name: "admin"
+    network_type: "flat"
+    physical_network: "flat"
+    admin_state: "up"
+    shared: true
+    external: true
+
+  #- name: "private_servers"
+    #project_name: "admin"
+    #network_type: "vlan"
+    #physical_network: "vlan"
+    #segmentation_id: 1
+    #admin_state: "up"
+    #shared: false
+    #external: false
+
+  - name: "private_servers"
+    project_name: "admin"
+    network_type: "vxlan"
+    segmentation_id: 1
+    admin_state: "up"
+    shared: false
+    external: false
+
+  - name: "private_cisnodes"
+    project_name: "admin"
+    network_type: "vxlan"
+    segmentation_id: 2
+    admin_state: "up"
+    shared: false
+    external: false
+
+
+# Subnet list to create inside each network
+osn_subnets:
+  - name: "external"
+    network_name: "external"
+    address: "192.168.90.0/24"
+    gateway: "192.168.90.254"
+    dhcp: false
+    allocation_pools: "192.168.90.80,192.168.90.90"
+    dns_nameservers: "192.168.90.254"
+
+  - name: "private_servers"
+    network_name: "private_servers"
+    address: "10.0.1.0/24"
+    dhcp: true
+    allocation_pools: "10.0.1.10,10.0.1.254"
+    dns_nameservers: "8.8.8.8,8.8.4.4"
+
+  - name: "private_cisnodes"
+    network_name: "private_cisnodes"
+    address: "10.0.2.0/24"
+    dhcp: true
+    allocation_pools: "10.0.2.10,10.0.2.254"
+    dns_nameservers: "8.8.8.8,8.8.4.4"
+
+# Router list to create to link 2 networks defined in network list
+osn_routers:
+  - name: "external_servers"
+    admin_state: "up"
+    external_network: "external"
+    internal_networks:
+      - private_servers
+
+  - name: "external_cisnodes"
+    admin_state: "up"
+    external_network: "external"
+    internal_networks:
+      - private_cisnodes

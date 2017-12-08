@@ -1,0 +1,18 @@
+---
+# tasks file for zabbix-agent
+
+- name: "Install the correct repository"
+  include: "Debian.yml"
+  when: ansible_os_family == "Debian"
+  tags:
+    - install
+
+- name: "Configure zabbix-agent"
+  template: src=zabbix_agentd.conf.j2
+            dest=/etc/zabbix/zabbix_agentd.conf
+            owner=zabbix
+            group=zabbix
+            mode=0644
+  notify: zabbix-agent restarted
+  tags:
+    - configure

@@ -1,0 +1,38 @@
+---
+# tasks file for zabbix-server
+
+- name: "Install the correct repository"
+  include: "Debian.yml"
+  when: ansible_os_family == "Debian"
+  tags:
+    - always
+
+- name: "Install the mysql database"
+  include: "mysql.yml"
+  when: zabbix_database_type_long == "mysql"
+  tags:
+    - always
+
+- name: "Configure zabbix-server"
+  template: src=zabbix_server.conf.j2
+            dest=/etc/zabbix/zabbix_server.conf
+            owner=zabbix
+            group=zabbix
+            mode=0644
+  notify: zabbix-server restarted
+  tags:
+    - zabbix-server
+    - init
+    - config
+
+- name: "Configure zabbix-frontend"
+  template: src=zabbix.conf.php.j2
+            dest=/etc/zabbix/web/zabbix.conf.php
+            owner=zabbix
+            group=zabbix
+            mode=0644
+  notify: zabbix-server restarted
+  tags:
+    - zabbix-server
+    - init
+    - config

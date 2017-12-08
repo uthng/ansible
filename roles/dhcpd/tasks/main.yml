@@ -1,0 +1,31 @@
+---
+# tasks file for dhcpd
+
+- name: Install isc-dhcp-server
+  apt:
+    name: isc-dhcp-server
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+  tags:
+    - dhcpd-install
+
+
+- include: "configure.yml"
+  tags:
+    - dhcpd-master-configure
+    - dhcpd-slave-configure
+
+- include: "log.yml"
+  tags:
+    - dhcpd-log-configure
+
+- name: Restart dhcpd server
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: isc-dhcp-server.service
+  tags:
+    - dhcpd-master-configure
+    - dhcpd-slave-configure
+    - dhcpd-log-configure
+

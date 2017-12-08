@@ -1,0 +1,9 @@
+---
+# handlers file for proxy
+- name: Restart docker service
+  service:
+    name: docker
+    state: restarted
+
+- name: Reload systemd
+  command: systemctl daemon-reload

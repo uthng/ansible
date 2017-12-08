@@ -1,0 +1,62 @@
+# vim:ft=ansible:
+# vim: sw=2 et ts=2 sts=2
+
+version: '3.1'
+
+{% if stack_service_list|length > 0 %}
+services:
+{% for service in stack_service_list %}
+{% for key, value in service.iteritems() recursive %}
+{#- Save loop depth for indent correctly -#}
+{%- set depth = loop.depth -%}
+{#- Check if key=name => service name -#}
+{% if key == "name" %}
+{{'  ' * (depth)}}{{ value }}:
+{% elif key != "enabled" %}
+{% if value is string or value is number %}
+{#- Specific cases always need string format with quote -#}
+{% if key == "cpus" %}
+{{'  ' * (depth+1)}}{{ key }}: '{{ value }}'
+{% else %}
+{{'  ' * (depth+1)}}{{ key }}: {{ value }}
+{% endif %}
+{% elif value is not mapping %}
+{% if value|length > 0 %}
+{{'  ' * (depth+1)}}{{ key }}:
+{% for val in value %}
+{#- Check if val is a simple number or string -#}
+{#- if val is under form of dict or object, just get the 1st key and value -#}
+{% if val is string or val is number %}
+{{'  ' * (depth+1)}}- {{ val }}
+{% else %}
+{% set k = val.keys()[0] %}
+{% set v = val.values()[0] %}
+{{'  ' * (depth+1)}}- {{ k }}: "{{ v }}"
+{% endif %}
+{% endfor %}
+{% endif %}{# if value|length #}
+{% else %}
+{{'  ' * (depth+1)}}{{ key }}:
+{{ loop(value.iteritems()) -}}
+{% endif %}{# if value type #}
+{% endif %}{# if key=name #}
+{% endfor %}{# loop key,value #}
+
+{% endfor %} {# service loop #}
+{% endif %}
+
+{% if stack_network_list|length > 0 %}
+networks:
+{% for net in stack_network_list %}
+  {{ net }}:
+    external: true
+{% endfor%}
+{% endif %}
+
+{% if stack_secret_list|length > 0 and stack_secret_list[0] != '' %}
+secrets:
+{% for secret in stack_secret_list %}
+  {{ secret }}:
+    external: true
+{% endfor%}
+{% endif %}

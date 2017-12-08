@@ -1,0 +1,31 @@
+- name: Ensure /etc/docker exist
+  file:
+    path: /etc/docker
+    state: directory
+    mode: 0700
+
+- name: Ensure the existence of graph folder if it is specified
+  file:
+    path: "{{ docker_daemon_options['graph'] }}"
+    state: directory
+    mode: 0711
+    owner: root
+    group: root
+  when: docker_daemon_options['graph'] is defined and docker_daemon_options['graph'] != ""
+
+- name: Copy daemon.json template"
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+  when: not ((docker_daemon_options is undefined) or  (docker_daemon_options is none) or (docker_daemon_options | trim == ''))
+
+- name: Configure ulimits
+  lineinfile:
+    dest: /lib/systemd/system/docker.service
+    regexp: "^{{ item.key }}"
+    insertafter: "^ExecReload"
+    line: "{{ item.key }}={{ item.value }}"
+  with_dict: "{{ docker_daemon_ulimits }}"
+
+- name: Restart docker daemon
+  systemd: name=docker state=restarted daemon-reload=yes

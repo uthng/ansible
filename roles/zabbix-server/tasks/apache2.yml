@@ -1,0 +1,36 @@
+# Install apache vhost conf for zabbix at 443 port
+- name: "Apache2 | Install apache vhost"
+  template: src=apache_vhost.conf.j2
+            dest=/etc/apache2/sites-available/zabbix.conf
+            owner=root
+            group=root
+            mode=0644
+  when: zabbix_server_vhost and zabbix_server_frontend
+  tags:
+    - zabbix-server
+    - init
+    - config
+    - apache
+
+### OPENSSL INCLUDE ##############
+
+# Activate conf zabbix site
+- name: "Apache2 | Install apache vhost - Activate zabbix site"
+  command: a2ensite zabbix
+  when: zabbix_server_vhost and zabbix_server_frontend
+  tags:
+    - zabbix-server
+    - init
+    - config
+    - apache
+
+# Enable apache SSL module support
+- name: "Apache2 | Install apache vhost - Enable SSL module"
+  command: a2enmod ssl
+  when: zabbix_server_vhost and zabbix_server_frontend
+  notify: apache2 restarted
+  tags:
+    - zabbix-server
+    - init
+    - config
+    - apache

@@ -1,0 +1,27 @@
+# Check if GnuPG key for repo exists
+- name: "SSL | Check if {{ reprepro_www_sslcertificatefile }} exists"
+  stat: path='{{ reprepro_www_sslcertificatefile }}'
+  register: sslcert
+  tags:
+    - repo
+    - www
+    - ssl
+
+# Copy the openssl conf to generate new certificat
+- name: "SSL | Copy openssl.conf"
+  template: src=openssl.cnf
+            dest='{{ reprepro_www_openssl_conf }}'
+  when: reprepro_www_vhost and (not sslcert.stat.exists)
+  tags:
+    - repo
+    - www
+    - ssl
+
+# Generate un certificat for SSL only if it does not exist
+- name: "SSL | Generate certificat SSL"
+  shell: 'openssl req -config {{ reprepro_www_openssl_conf }} -new -x509 -days 1825 -newkey rsa:4096 -nodes -out {{ reprepro_www_sslcertificatefile }} -keyout {{ reprepro_www_sslcertificatekeyfile }}'
+  when: reprepro_www_vhost and (not sslcert.stat.exists)
+  tags:
+    - repo
+    - www
+    - ssl

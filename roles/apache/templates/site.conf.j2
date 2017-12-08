@@ -1,0 +1,7 @@
+
+{% set vhost = apache_vhosts[item] %}
+<VirtualHost {{ vhost.Host }}:{{ vhost.Port }}>
+{% for key, value in vhost.Directives|dictsort %}
+  {{ key }} {{ value }}
+{% endfor %}
+</VirtualHost>

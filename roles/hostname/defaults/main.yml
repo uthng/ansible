@@ -1,0 +1,13 @@
+---
+# defaults file for hostname
+#
+hostname_distribution: '{{ ansible_distribution | lower() }}'
+hostname_release: '{{ ansible_distribution_release | lower() }}'
+hostname_distribution_release: '{{ hostname_distribution + "-" + hostname_release }}'
+
+hostname_newfqdn: "{{ inventory_hostname }}"
+hostname_newhost: "{{ inventory_hostname }}"
+hostname_eth_interface: eth0
+
+hostname_set_ip: False
+hostname_ip: "{% if hostname_set_ip %}{{ hostvars[inventory_hostname]['ansible_' + hostname_eth_interface]['ipv4']['address'] }}{% else%}127.0.1.1{% endif %}"

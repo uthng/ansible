@@ -1,0 +1,50 @@
+---
+# defaults file for zabbix-agent
+zabbix_agent_version: '3.0'
+
+zabbix_agent_repo: True
+#zabbix_agent_repo_url: "deb http://repo.zabbix.com/zabbix/{{ zabbix_server_version }}/debian/ {{ ansible_distribution_release }} main"
+zabbix_agent_repo_url: "deb http://192.168.90.46:81/zabbix-mirror jessie main"
+zabbix_agent_repo_key: False
+zabbix_agent_repo_key_url: ""
+
+############## ZABBIX AGENT CONFIGURATION SETTINGS #############################
+zabbix_agent_pidfile: '/var/run/zabbix/zabbix_agentd.pid'
+zabbix_agent_logfile: '/var/log/zabbix/zabbix_agentd.log'
+# zabbix_agent_logtype: 'file'
+zabbix_agent_logfilesize: 0
+zabbix_agent_debuglevel: 5
+# zabbix_agent_sourceip:
+# zabbix_agent_enableremotecommands: 0
+# zabbix_agent_logremotecommands: 0
+zabbix_agent_server: '192.168.90.82'
+# zabbix_agent_listenport: 10050
+# zabbix_agent_listenip: 0.0.0.0
+# zabbix_agent_startagents: 3
+zabbix_agent_serveractive: '192.168.90.82'
+# zabbix_agent_hostname: 'Zabbix agent'
+zabbix_agent_hostnameitem: system.hostname
+# zabbix_agent_hostmetadata:
+zabbix_agent_hostmetadataitem: system.uname
+zabbix_agent_refreshactivechecks: 120
+# zabbix_agent_buffersend: 5
+# zabbix_agent_buffersize: 100
+# zabbix_agent_maxlinespersecond: 20
+# zabbix_agent_timeout: 3
+# zabbix_agent_allowroot: 0
+# zabbix_agent_user: zabbix
+zabbix_agent_include: '/etc/zabbix/zabbix_agentd.d/'
+# zabbix_agent_unsafeuserparameters: 0
+# zabbix_agent_userparameter:
+# zabbix_agent_loadmodulepath: ${libdir}/modules
+# zabbix_agent_loadmodule:
+# zabbix_agent_tlsconnect: unencrypted
+# zabbix_agent_tlsaccept: unencrypted
+# zabbix_agent_tlscafile:
+# zabbix_agent_tlscrlfile:
+# zabbix_agent_tlsservercertissuer:
+# zabbix_agent_tlsservercertsubject:
+# zabbix_agent_tlscertfile:
+# zabbix_agent_tlskeyfile:
+# zabbix_agent_tlspskidentity:
+# zabbix_agent_tlspskfile:

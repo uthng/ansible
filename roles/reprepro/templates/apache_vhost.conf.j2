@@ -1,0 +1,27 @@
+<VirtualHost {{ hostvars[inventory_hostname]['ansible_' + reprepro_www_interface]['ipv4']['address'] }}:{{reprepro_www_port }}>
+    DocumentRoot {{ reprepro_www_root }}
+
+    ServerName {{ reprepro_www_servername }}
+    {% for alias in reprepro_www_serveralias %}
+    ServerAlias {{ alias }}
+    {% endfor %}
+    ServerAdmin {{ reprepro_www_serveradmin }}
+
+    <Directory "{{ reprepro_www_root }}">
+        AuthType {{ reprepro_www_authtype }}
+        AuthName {{ reprepro_www_authname }}
+        AuthUserFile {{ reprepro_www_authuserfile }}
+        Require valid-user
+
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        #Order allow,deny
+        #Allow from all
+    </Directory>
+
+    {% if reprepro_www_sslengine == "on" %}
+    SSLEngine {{ reprepro_www_sslengine }}
+    SSLCertificateFile    {{ reprepro_www_sslcertificatefile }}
+    SSLCertificateKeyFile {{ reprepro_www_sslcertificatekeyfile }}
+    {% endif %}
+</VirtualHost>

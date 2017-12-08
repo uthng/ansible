@@ -1,0 +1,53 @@
+---
+# defaults file for activemq
+
+activemq_distribution: '{{ ansible_distribution | lower() }'
+activemq_release: '{{ ansible_distribution_release | lower() }}'
+activemq_distribution_release: '{{ activemq_distribution + "-" + activemq_release }}'
+
+# Ansible role options
+activemq_install_enabled: True
+activemq_configure_enabled: True
+
+
+activemq_version: '5.14.5'
+activemq_package_name: 'apache-activemq-{{ activemq_version }}'
+activemq_archive_name: 'apache-activemq-{{ activemq_version }}-bin.tar.gz'
+activemq_download_url: 'https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/{{ activemq_version }}/{{ activemq_archive_name }}'
+
+activemq_broker_name: '{{ hostvars[inventory_hostname]["node_name"] | default(inventory_hostname) }}'
+activemq_home: '/opt/activemq'
+activemq_config: '/opt/activemq/conf'
+activemq_data: '/opt/activemq/data'
+
+# Memory control limit
+activemq_producer_flow_control: "false"
+activemq_producer_control_limit: '1gb'
+activemq_vmheap_size: '-Xms1G -Xmx24G'
+activemq_usage_memory: "16 gb"
+activemq_usage_store: "100 gb"
+activemq_usage_temp: "100 gb"
+
+activemq_tcp: 61616
+#activemq_amq: 5672
+activemq_stomp: 61613
+#activemq_mqtt: 1883
+#activemq_ws: 61614
+activemq_ui: 8161
+
+activemq_bindip: '0.0.0.0'
+# 2 kinds of network brokers: static or dynamic (multicast)
+activemq_network_type: 'static'
+activemq_broker_masters: '{% set join_comma = joiner(",") %}{% if hostvars[inventory_hostname]["node_masters"] is defined and hostvars[inventory_hostname]["node_masters"] != "" %}{% set masters = hostvars[inventory_hostname]["node_masters"].split(",")|list|unique %}{% for master in masters %}{{ join_comma() }}tcp://{{ master }}:{{ activemq_tcp }}{% endfor %}{% endif %}'
+
+activemq_opts: ''
+
+# ActiveMQ environment variables
+activemq_env_vars:
+  ACTIVEMQ_BASE: '{{ activemq_home }}'
+  ACTIVEMQ_HOME: '{{ activemq_home }}'
+  ACTIVEMQ_CONF: '{{ activemq_config }}'
+  ACTIVEMQ_DATA: '{{ activemq_data }}'
+  ACTIVEMQ_USER: activemq
+  ACTIVEMQ_OPTS: '{{ activemq_opts }}'
+  ACTIVEMQ_OPTS_MEMORY: '{{ activemq_vmheap_size }}'

@@ -1,0 +1,15 @@
+---
+# tasks file for apt-mirror
+
+# Include debian playbook for package installation
+- name: "Include Debian playbook"
+  include: "Debian.yml"
+  when: ansible_os_family == "Debian"
+  tags:
+    - install
+
+# Include file configuring apt-mirror
+- name: "Include file configuring apt-mirror"
+  include: apt_mirror.yml
+  tags:
+    - configure

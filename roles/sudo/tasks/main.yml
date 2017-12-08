@@ -1,0 +1,9 @@
+---
+# tasks file for sudo
+
+# Include Debian for package installation
+- name : "Include Debian yaml"
+  include: "debian.yml"
+  when: ansible_os_family == "Debian"
+  tags:
+    - sudo-install

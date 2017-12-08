@@ -1,0 +1,31 @@
+---
+# defaults file for u.docker
+docker_distribution: '{{ ansible_distribution | lower() }}'
+docker_release: '{{ ansible_distribution_release | lower() }}'
+docker_distribution_release: '{{ docker_distribution + "-" + docker_release }}'
+
+docker_install_engine: True
+docker_install_compose: True
+docker_configure_daemon: False
+
+# URL for repository or download
+docker_key_url: "https://download.docker.com/linux/{{ docker_distribution }}/gpg"
+docker_repo_url: "deb [arch=amd64] https://download.docker.com/linux/{{ docker_distribution }} {{ docker_release}} stable"
+docker_compose_dl_url: "https://github.com/docker/compose/releases/download/1.17.0"
+
+# docker daemon options
+# ex:
+# docker_daemon_opts:
+#   debug: false
+#   experimental: true
+#   graph: /var/lib/docker
+docker_daemon_options: {}
+
+docker_daemon_ulimits: {}
+
+# Proxy configuration
+docker_http_proxy: ""
+docker_https_proxy: ""
+docker_no_proxy: ""
+docker_engine_configure_proxy: "{% if (((docker_http_proxy is defined) and (docker_http_proxy != '')) or ((docker_https_proxy is defined) and (docker_https_proxy != ''))) %}True{% else %}False{% endif %}"
+

@@ -1,0 +1,59 @@
+---
+# tasks file for docker-activemq
+- name: Copy ActiveMQ default configuration files
+  copy:
+    src: "conf/"
+    dest: "{{ activemq_config }}"
+  tags:
+    - activemq-configure
+
+- name: Copy ActiveMQ static configuration file
+  template:
+    src: activemq_static.xml.j2
+    dest: '{{ activemq_config }}/activemq.xml'
+  when: activemq_network_type == "static"
+  tags:
+    - activemq-configure
+
+- name: Copy ActiveMQ dynamic configuration file (multicast)
+  template:
+    src: activemq_dynamic.xml.j2
+    dest: '{{ activemq_config }}/activemq.xml'
+  when: activemq_network_type == "dynamic"
+  tags:
+    - activemq-configure
+
+- name: Copy ActiveMQ other configuration files
+  template:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+  with_items:
+    - { src: 'log4j.properties.j2', dest: '{{ activemq_config }}/log4j.properties' }
+  tags:
+    - activemq-configure
+
+- name: Check if activemq folders exist
+  file:
+    path: '{{ item }}'
+    state: directory
+  with_items:
+    - '{{ activemq_data }}'
+    - '{{ activemq_config }}'
+  tags:
+    - activemq-configure
+
+- name: Launch ActiveMQ container
+  docker_container:
+    name: '{{ activemq_broker_name }}'
+    image: '{{ activemq_docker_image }}:{{ activemq_version }}'
+    command: '{{ activemq_docker_command }}'
+    state: started
+    recreate: yes
+    restart: yes
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes:
+      - '{{ activemq_config }}:/opt/activemq/conf'
+      - '{{ activemq_data }}:/data/activemq'
+    env:
+      ACTIVEMQ_OPTS_MEMORY: '{{ activemq_vmheap_size }}'

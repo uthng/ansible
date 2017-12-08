@@ -1,0 +1,29 @@
+---
+# defaults file for glusterfs
+glusterfs_distribution: '{{ ansible_distribution | lower() }}'
+glusterfs_release: '{{ ansible_distribution_release | lower() }}'
+glusterfs_distribution_release: '{{ glusterfs_distribution + "-" + glusterfs_release }}'
+
+# Options
+glusterfs_install_enabled: True
+glusterfs_peer_enabled: False
+glusterfs_volume_enabled: False
+glusterfs_server_interface: eth0
+glusterfs_host_group: "glusterfs"
+
+glusterfs_ubuntu_version: 3.8
+
+# Brick and volume variables
+# Example:
+# glusterfs_brick_volumes:
+#   - volume_name: "vol1"
+#     volume_type: "replica"
+#     volume_count: 2
+#     volume_transport: "tcp"
+#     brick_path: "/data/vol1"
+#     brick_servers: "gfs1,gfs2"
+glusterfs_brick_volumes: []
+
+# Generated variables
+glusterfs_hosts_to_peer: "{% set comma = joiner(', ') %}{% for host in groups[glusterfs_host_group] %}{% if host != inventory_hostname %}{{ comma() }}{{ host }}{% endif %}{% endfor %}"
+

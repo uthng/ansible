@@ -1,0 +1,23 @@
+- name: "Volume | Check if brick path aleady exists"
+  file:
+    path: "{{ item.brick_path }}"
+    state: directory
+    mode: 0775
+  with_items: "{{ glusterfs_brick_volumes }}"
+  tags:
+    - glusterfs-volume-create
+
+- name: "Volume | Create new volume glusterfs"
+  gluster_volume:
+    name: "{{ item.volume_name | mandatory }}"
+    replicas: "{% if item.volume_type == 'replica' %}{{ item.volume_count }}{% else %}{{ omit }}{% endif %}"
+    stripes: "{% if item.volume_type == 'stripe' %}{{ item.volume_count }}{% else %}{{ omit }}{% endif %}"
+    transport: "{{ item.volume_transport }}"
+    cluster: "{{ item.brick_servers }}"
+    bricks: "{{ item.brick_path | mandatory }}"
+    force: yes
+    state: present
+  with_items: "{{ glusterfs_brick_volumes }}"
+  run_once: true
+  tags:
+    - glusterfs-volume-create

@@ -1,0 +1,18 @@
+---
+# defaults file for proxy
+proxy_distribution: '{{ ansible_distribution | lower() }}'
+proxy_release: '{{ ansible_distribution_release | lower() }}'
+proxy_distribution_release: '{{ proxy_distribution + "-" + proxy_release }}'
+
+
+proxy_apt: true
+proxy_bash: true
+proxy_sudo: true
+proxy_pip: true
+proxy_curl: true
+proxy_docker: true
+
+proxy_http: "http://10.160.248.14"
+proxy_https: "http://10.160.248.14"
+proxy_port: 8118
+proxy_no_proxy: "localhost,127.0.0.1,*.vpgrp.io,*.oredis.local"

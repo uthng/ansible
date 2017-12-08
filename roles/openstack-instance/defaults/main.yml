@@ -1,0 +1,63 @@
+---
+# defaults file for openstack-instance
+#
+
+osi_cloud: "default"
+
+# Action pamaraters for including corresponding tasks
+osi_task_cleanpup: true
+osi_task_populate: true
+osi_task_actions: false
+
+# List of instances to perform an specified action
+osi_my_instances: ""
+osi_specified_instances: "{{ osi_my_instances.split(',')|list + openstack_servers|selectattr('name')|list }}"
+
+# List of instances to populate at this 1st time
+osi_instances:
+  - name: "zabbix"
+    state: "present"
+    image: "Official-Debian-8.4"
+    flavor: "m1.medium"
+    network: "private_servers"
+    security_groups: "default"
+    key_name: "os-public-servers"
+#    floating_ip_pools: "external"
+    floating_ips: "192.168.90.82"
+
+  - name: "repo"
+    state: "present"
+    image: "Official-Debian-8.4"
+    flavor: "m1.large-disk"
+    network: "private_servers"
+    security_groups: "default"
+    key_name: "os-public-servers"
+#    floating_ip_pools: "external"
+    floating_ips: "192.168.90.83"
+
+  - name: "cisnode-1"
+    state: "present"
+    image: "Official-Debian-8.4"
+    flavor: "m1.small"
+    network: "private_cisnodes"
+    security_groups: "default"
+    key_name: "os-public-servers"
+    floating_ip_pools: "external"
+
+  - name: "cisnode-2"
+    state: "present"
+    image: "Official-Debian-8.4"
+    flavor: "m1.small"
+    network: "private_cisnodes"
+    security_groups: "default"
+    key_name: "os-public-servers"
+    floating_ip_pools: "external"
+
+  - name: "cisnode-3"
+    state: "present"
+    image: "Official-Debian-8.4"
+    flavor: "m1.small"
+    network: "private_cisnodes"
+    security_groups: "default"
+    key_name: "os-public-servers"
+    floating_ip_pools: "external"

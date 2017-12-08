@@ -1,0 +1,85 @@
+- name: Add debian backport repository
+  apt_repository:
+    repo: "deb http://httpredir.debian.org/debian jessie-backports main contrib non-free"
+    state: present
+
+- name: Install/Uninstall necessary deb packages
+  apt:
+    name: "{{ item.pkg }}"
+    state: "{{ item.state }}"
+    update_cache: yes
+  with_items:
+    - pkg: ca-certificates-java=20161107~bpo8+1
+      state: present
+    - pkg: openjdk-8-jre-headless
+      state: present
+    - pkg: openjdk-7-jre-headless
+      state: absent
+
+- name: Check if archive is already downloaded
+  stat:
+    path: /tmp/{{ activemq_archive_name }}
+  register: archive_check
+  tags:
+    - activemq-install
+
+- name: Download archive
+  get_url: "url={{ activemq_download_url }} dest=/tmp/{{ activemq_archive_name }} timeout=240"
+  when: not archive_check.stat.exists
+  tags:
+    - activemq-install
+
+- name: Create group activemq
+  group:
+    name: activemq
+    state: present
+  tags:
+    - activmq-install
+
+- name: Create user activemq
+  user:
+    name: activemq
+    group: activemq
+    system: yes
+    createhome: no
+    home: '{{ activemq_home }}'
+  tags:
+    - activemq-install
+
+- name: Uncompress the archive
+  unarchive:
+    src: '/tmp/{{ activemq_archive_name }}'
+    dest: '/opt'
+    owner: activemq
+    group: activemq
+    remote_src: yes
+  tags:
+    - activemq-install
+
+- name: Create a symbolic link
+  file:
+    src: '/opt/{{ activemq_package_name }}'
+    dest: '{{ activemq_home }}'
+    owner: activemq
+    group: activemq
+    state: link
+  tags:
+    - activemq-install
+
+- name: Check if activemq folders exist
+  file:
+    path: '{{ item }}'
+    owner: activemq
+    group: activemq
+    state: directory
+  with_items:
+    - '{{ activemq_data }}'
+    - '{{ activemq_config }}'
+  tags:
+    - activemq-install
+
+- name: Copy default conf dir
+  shell: "cp -rp {{ activemq_home}}/conf/* {{ activemq_config }}"
+  when: (activemq_home + "/conf" != activemq_config)
+  tags:
+    - activemq-install

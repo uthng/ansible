@@ -1,0 +1,9 @@
+---
+# defaults file for resolvconf
+
+resolvconf_distribution: '{{ ansible_distribution | lower() }}'
+resolvconf_release: '{{ ansible_distribution_release | lower() }}'
+resolvconf_distribution_release: '{{ resolvconf_distribution + "-" + resolvconf_release }}'
+
+resolvconf_nameservers: ["10.22.55.15", "10.22.55.16"]
+resolvconf_domain_search: ["vpgrp.io", "oredis-vp.local", "vpgs.local", "oredis-vp-pp.local", "vppp.local", "vpvm.local", "vente-privee.com"]
