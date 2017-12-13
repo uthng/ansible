@@ -62,4 +62,4 @@ consul_syslog_enable: false
 # and list of consul servers
 # consul_raw_key: ""
 # consul_start_join is a list of consul server separated by comma
-# consul_start_join: "172.17.8.11,172.17.8.12"
+# consul_start_join: "172.17.8.11;172.17.8.12"
