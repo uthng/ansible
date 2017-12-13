@@ -1,0 +1,75 @@
+---
+# defaults file for vault
+
+# Mode: dev or prod
+vault_server_mode: "prod"
+
+# General configurations
+vault_config_path: "/vault/config"
+vault_data_file_path: "/vault/file"
+vault_log_path: "/vault/logs"
+vault_ssl_path: "/etc/ssl/vault"
+vault_log_level: info
+
+# Host volume path
+vault_host_config_path: "/data/vault/config"
+vault_host_data_file_path: "/data/vault/file"
+vault_host_log_path: "/data/vault/logs"
+
+vault_timezone: "Europe/Paris"
+
+# TLS
+vault_openssl_conf: "{{ vault_ssl_path }}/openssl_vpcorp.cnf"
+vault_openssl_tls_cert_file: "{{ vault_ssl_path }}/vault.crt"
+vault_openssl_tls_key_file: "{{ vault_ssl_path }}/vault.key"
+
+vault_backend: "consul"
+vault_listener: "tcp"
+vault_tls: True
+
+# Vault general configuration options
+vault_conf:
+  ha_storage: ""
+  cluster_name: ""
+  cache_size: ""
+  disable_cache: ""
+  disable_mlock: "true"
+  telemetry: ""
+  default_lease_ttl: ""
+  max_lease_ttl: ""
+  ui: ""
+
+# Listener TCP parameters
+vault_listener_tcp:
+  address: "0.0.0.0:8200"
+  cluster_address: ""
+  tls_disable: "{% if vault_tls|bool %}false{% else %}true{% endif %}"
+  tls_cert_file: "{% if (vault_tls|bool) %}{{ vault_openssl_tls_cert_file }}{% endif %}"
+  tls_key_file: "{% if (vault_tls|bool) %}{{ vault_openssl_tls_key_file }}{% endif %}"
+  tls_min_version: ""
+  tls_cipher_suites: ""
+  tls_prefer_server_cipher_suites: ""
+  tls_require_and_verify_client_cert: ""
+
+
+# Backend parameters for each kind
+# Consul backend parameters
+vault_backend_consul:
+  address: "127.0.0.1:8500"
+  check_timeout: ""
+  consistency_mode: ""
+  disable_registration: ""
+  max_parallel: ""
+  path: "vault"
+  scheme: ""
+  service: ""
+  service_tags: ""
+  token: ""
+  tls_ca_file: ""
+  tls_cert_file: ""
+  tls_key_file : ""
+  tls_min_version : ""
+  tls_skip_verify: ""
+  cluster_addr: ""
+  disable_clustering: ""
+  redirect_addr: ""

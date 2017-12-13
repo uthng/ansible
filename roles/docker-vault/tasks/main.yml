@@ -1,0 +1,44 @@
+---
+# tasks file for docker-vault
+- name: Create directories
+  file:
+    dest: "{{ item }}"
+    state: directory
+    mode: 0777
+  with_items:
+    - "{{ vault_host_data_file_path }}"
+    - "{{ vault_host_log_path }}"
+    - "{{ vault_host_config_path }}"
+  tags:
+    - vault-install
+
+
+- name: Install Vault configuration
+  template:
+    src: vault.hcl.j2
+    dest: "{{ vault_host_config_path }}/vault.hcl"
+    mode: 0777
+  tags:
+    - vault-install
+
+- name: Launch Vault container
+  docker_container:
+    name: 'vault'
+    image: 'vault:0.9.0'
+    command: "{{ vault_server_mode }}"
+    state: started
+    recreate: yes
+    restart: yes
+    restart_policy: unless-stopped
+    network_mode: host
+    #capabilities: IPC_LOCK
+    privileged: yes
+    volumes:
+      - "{{ vault_host_config_path }}:{{ vault_config_path }}"
+      - "{{ vault_host_data_file_path }}:{{ vault_data_file_path }}"
+      - "{{ vault_host_log_path }}:{{ vault_log_path }}"
+    env:
+      TZ: "{{ vault_timezone }}"
+      SKIP_SETCAP: "1"
+  tags:
+    - vault-intsall

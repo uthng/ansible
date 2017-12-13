@@ -1,0 +1,30 @@
+{% for key, value in vault_conf.iteritems() %}
+{% if value is defined and value != "" %}
+    {{ key }} = "{{ value }}"
+{% endif %}
+{% endfor  %}
+
+storage "{{ vault_backend }}" {
+{% if vault_backend == "consul" %}
+{% for key, value in vault_backend_consul.iteritems() %}
+{% if value is defined and value != "" %}
+    {{ key }} = "{{ value }}"
+{% endif %}
+{% endfor  %}
+{% endif %}
+}
+
+listener "{{ vault_listener }}" {
+{% if vault_listener == "tcp" %}
+{% for key, value in vault_listener_tcp.iteritems() %}
+{% if value is defined and value != "" %}
+{% if value is string %}
+    {{ key }} = "{{ value }}"
+{% else %}
+    {{ key }} = {{ value }}
+{% endif %}
+{% endif %}
+{% endfor  %}
+{% endif %}
+}
+
