@@ -40,5 +40,6 @@
     env:
       TZ: "{{ vault_timezone }}"
       SKIP_SETCAP: "1"
+      VAULT_ADDR: "{% if vault_tls == false %}http://127.0.0.1:8200{% endif %}"
   tags:
     - vault-intsall
