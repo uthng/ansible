@@ -1,0 +1,83 @@
+defaults
+    log {{ haproxy_default_log }}
+    mode {{ haproxy_default_mode }}
+    {% for opt in haproxy_default_options -%}
+    option {{ opt }}
+    {% endfor -%}
+    retries {{ haproxy_default_retries }}
+    timeout connect {{ haproxy_default_timeout_connect }}
+    timeout server {{ haproxy_default_timeout_server }}
+    timeout client {{ haproxy_default_timeout_client }}
+
+{% if haproxy_frontends|length > 0 %}
+{% set space = joiner(' ') %}
+
+{% for front in haproxy_frontends -%}
+frontend {{ front.name }}
+    {% for bind in front.binds -%}
+    bind {{ bind }}
+    {% endfor -%}
+    {% if front.timeout_client is defined and front.timeout_client != "" -%}
+    timeout client {{ back.timeout_client }}
+    {% else -%}
+    timeout client {{ haproxy_frontends_timeout_client }}
+    {% endif -%}
+
+    {% if front.acls is defined and front.acls|length > 0 -%}
+    {% for acl in front.acls -%}
+    acl {{ acl.name }} {{ acl.criterion }} {% for pattern in acl.patterns %}{{ space() }}{{ pattern }}{% endfor %}
+
+    use_backend {{ acl.use_backend }} if {{ acl.name }}
+    {% endfor -%}
+    {% endif -%}
+    {% if front.default_backend is defined and front.default_backend != "" -%}
+    default_backend {{ front.default_backend }}
+    {% endif %}
+
+{% endfor %}
+{% endif %}
+
+{% if haproxy_backends|length > 0 -%}
+{% for back in haproxy_backends -%}
+backend {{ back.name }}
+    {% if back.balance is defined and back.balance != "" -%}
+    balance {{ back.balance }}
+    {% else -%}
+    balance {{ haproxy_backends_balance }}
+    {% endif -%}
+    {% if back.mode is defined and back.mode != "" -%}
+    mode {{ back.mode }}
+    {% else -%}
+    mode {{ haproxy_backends_mode }}
+    {% endif -%}
+    {% if back.timeout_connect is defined and back.timeout_connect != "" -%}
+    timeout connect {{ back.timeout_connect }}
+    {% else -%}
+    timeout connect {{ haproxy_backends_timeout_connect }}
+    {% endif -%}
+    {% if back.timeout_server is defined and back.timeout_server != "" -%}
+    timeout server {{ back.timeout_server }}
+    {% else -%}
+    timeout server {{ haproxy_backends_timeout_server }}
+    {% endif -%}
+    {% if back.options is defined and back.options|length > 0 -%}
+    {% set options = back.options -%}
+    {% elif haproxy_backends_options is defined and haproxy_backends_options|length > 0 -%}
+    {% set options = haproxy_backends_options -%}
+    {% endif -%}
+    {% if options is defined -%}
+    {% for opt in options -%}
+    option {{ opt }}
+    {% endfor -%}
+    {% endif -%}
+
+    {% for server in back.servers -%}
+    {% if back.settings is defined and back.settings != "" -%}
+    server {{ server.name }} {{ server.host }} {{ (server.backup is defined and server.backup)|ternary('backup ','') }}{{ back.settings }}
+    {% else -%}
+    server {{ server.name }} {{ server.host }} {{ (server.backup is defined and server.backup)|ternary('backup ','') }}{{ haproxy_backends_settings }}
+    {% endif -%}
+    {% endfor %}
+
+{% endfor %}
+{% endif %}

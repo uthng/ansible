@@ -1,0 +1,56 @@
+# {{ ansible_managed }}
+
+{% if keepalived_script_name is defined and keepalived_script_name != "" %}
+vrrp_script {{ keepalived_script_name }} {
+    script "{{ keepalived_script_cmd }}"
+    {% if keepalived_script_interval is defined -%}
+    interval {{ keepalived_script_interval }}
+    {% endif -%}
+    {% if keepalived_script_fall is defined -%}
+    fall {{ keepalived_script_fall }}
+    {% endif -%}
+    {% if keepalived_script_rise is defined -%}
+    rise {{ keepalived_script_rise }}
+    {% endif -%}
+    {% if keepalived_script_timeout is defined -%}
+    timeout {{ keepalived_script_timeout }}
+    {% endif -%}
+    {% if keepalived_script_weight is defined -%}
+    weight {{ keepalived_script_weight }}
+    {% endif -%}
+}
+{% endif %}
+
+vrrp_instance {{ keepalived_instance_name -}} {
+    {% if hostvars[inventory_hostname]['node_role'] == "master" -%}
+    state {{ keepalived_instance_state_master }}
+    priority {{ keepalived_instance_priority_master }}
+    {% else -%}
+    state {{ keepalived_instance_state_slave }}
+    priority {{ keepalived_instance_priority_slave }}
+    {% endif -%}
+    interface {{ keepalived_instance_interface }}
+    virtual_router_id {{ keepalived_instance_router_id }}
+    advert_int 1
+
+    {% if keepalived_instance_unicast -%}
+    unicast_src_ip {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+    unicast_peer {
+        {% for peer in keepalived_instance_unicast_peers -%}
+        {{ peer }}
+        {% endfor -%}
+    }
+    {% endif %}
+
+    authentication {
+        auth_type {{ keepalived_auth_type}}
+        auth_pass {{ keepalived_auth_password }}
+    }
+
+    virtual_ipaddress {
+        {% for ip in keepalived_instance_virtual_ips -%}
+        {{ ip }}
+        {% endfor -%}
+
+    }
+}

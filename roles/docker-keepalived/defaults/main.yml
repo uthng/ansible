@@ -1,0 +1,50 @@
+---
+# defaults file for docker-keepalived
+keepalived_os_distribution: '{{ ansible_distribution | lower() }'
+keepalived_os_release: '{{ ansible_distribution_release | lower() }}'
+keepalived_os_distribution_release: '{{ keepalived_os_distribution + "-" + keepalived_os_release }}'
+
+# keepalived docker env variables
+keepalived_docker_image: "osixia/keepalived:1.4.0"
+keepalived_timezone: "Europe/Paris"
+
+keepalived_host_config_dir: "/data/keepalived"
+keepalived_docker_config_dir: "/container/service/keepalived/assets"
+
+# global_defs section
+#keepalived_global_interface: "ens192"
+
+# vrrp_script
+keepalived_script_name: "chk_haproxy"
+keepalived_script_cmd: ""
+keepalived_script_timeout: 1
+keepalived_script_interval: 1
+keepalived_script_fall: 1
+keepalived_script_rise: 1
+keepalived_script_weight: 2
+
+# vrrp_instance
+keepalived_instance_name: "VI_1"
+keepalived_instance_state_master: "MASTER"
+keepalived_instance_state_slave: "SLAVE"
+keepalived_instance_interface: "ens192"
+keepalived_instance_router_id: 41
+keepalived_instance_priority_master: 101
+keepalived_instance_priority_slave: 100
+keepalived_instance_virtual_ips: []
+
+# By default, multicast will be used
+# If unicast is enabled
+keepalived_instance_unicast: true
+keepalived_instance_unicast_peers: ['192.168.1.10', '192.168.1.11']
+
+#keepalived_notify: ""
+
+# authentication
+keepalived_auth_type: "PASS"
+keepalived_auth_password: "password"
+
+# Notification
+#keepalived_notify_master: ""
+
+#keepalived_command_line_arguments: ""
