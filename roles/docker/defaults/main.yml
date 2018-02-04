@@ -8,6 +8,9 @@ docker_install_engine: True
 docker_install_compose: True
 docker_configure_daemon: False
 
+# By default, the latest will be installed. If not specify the version with the following variable
+docker_package: "docker-ce"
+
 # URL for repository or download
 docker_key_url: "https://download.docker.com/linux/{{ docker_distribution }}/gpg"
 docker_repo_url: "deb [arch=amd64] https://download.docker.com/linux/{{ docker_distribution }} {{ docker_release}} stable"

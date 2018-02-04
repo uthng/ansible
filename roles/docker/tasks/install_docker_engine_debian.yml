@@ -70,7 +70,7 @@
 # Install docker package
 - name: "Debian | Install docker-engine package"
   apt:
-    name: docker-ce
+    name: "{{ docker_package }}"
     state: present
     update-cache: yes
     allow_unauthenticated: yes
