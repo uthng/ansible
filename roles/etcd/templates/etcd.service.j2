@@ -1,0 +1,34 @@
+[Unit]
+Description=etcd
+Documentation=https://github.com/coreos/etcd
+Conflicts=etcd.service
+Conflicts=etcd2.service
+
+[Service]
+#EnvironmentFile=/etc/etcd.env
+Type=notify
+Restart=always
+RestartSec=5s
+LimitNOFILE=40000
+TimeoutStartSec=0
+
+ExecStart=/usr/local/bin/etcd --name {{ inventory_hostname }} \
+    --data-dir {{ etcd_host_data_dir }} \
+    --listen-client-urls https://{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}:2379 \
+    --advertise-client-urls https://{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}:2379 \
+    --listen-peer-urls https://{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}:2380 \
+    --initial-advertise-peer-urls https://{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}:2380 \
+    --cert-file={{ etcd_host_cert_dir }}/server.pem \
+    --key-file={{ etcd_host_cert_dir }}/server-key.pem \
+    --client-cert-auth \
+    --trusted-ca-file={{ etcd_host_cert_dir }}/ca.pem \
+    --peer-cert-file={{ etcd_host_cert_dir }}/peer.pem \
+    --peer-key-file={{ etcd_host_cert_dir }}/peer-key.pem \
+    --peer-client-cert-auth \
+    --peer-trusted-ca-file={{ etcd_host_cert_dir }}/ca.pem \
+    --initial-cluster {{ etcd_initial_cluster }} \
+    --initial-cluster-token {{ etcd_initial_cluster_token }} \
+    --initial-cluster-state {{ etcd_initial_cluster_state }}
+
+[Install]
+WantedBy=multi-user.target

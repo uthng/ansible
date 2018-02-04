@@ -1,0 +1,41 @@
+---
+# defaults file for k8s-kubeadm
+kubeadm_os_distribution: '{{ ansible_distribution | lower() }'
+kubeadm_os_release: '{{ ansible_distribution_release | lower() }}'
+kubeadm_os_distribution_release: '{{ kubeadm_os_distribution + "-" + kubeadm_os_release }}'
+
+# Kubeadm variables
+kubeadm_key_url: "http://packages.cloud.google.com/apt/doc/apt-key.gpg"
+kubeadm_repo_url: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+kubeadm_interface: "eth0"
+kubeadm_pod_subnet: "172.17.8.0/24"
+
+kubeadm_kubernetes_dir: "/etc/kubernetes"
+kubeadm_manifest_dir: "{{ kubeadm_kubernetes_dir}}/manifests"
+kubeadm_pki_dir: "{{ kubeadm_kubernetes_dir }}/pki"
+
+# list of all apiserver or other master nodes or load balancer
+kubeadm_apiserver_cert_sans: []
+
+# If defined, it will scp etcd certificates from etcd cluster to kubernetes
+#kubeadm_pki_etcd_src: ""
+#kubeadm_pki_etcd_src_server: ""
+#kubeadm_pki_etcd_src_dir: ""
+kubeadm_pki_etcd_dir: "/etc/kubernetes/pki/etcd"
+kubeadm_pki_etcd_ca: "ca.pem"
+kubeadm_pki_etcd_client: "client.pem"
+kubeadm_pki_etcd_client_key: "client-key.pem"
+
+
+kubeadm_etcd_tls: True
+kubeadm_network: "calico"
+#kubeadm_calico_rbac_url: "https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/rbac.yaml"
+#kubeadm_calico_url: "https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/calico.yaml"
+
+# Set kubeadm_worker_join_token if we want to setup only worker
+#kubeadm_worker_join_token: ""
+#kubeadm_worker_hash_ca: ""
+
+# Set this variable for designing a host master for installation
+kubeadm_master_etcd_endpoints: "{% set comma = joiner(',') %}{% for host in groups[etcd] %}{{ comma()}}https://{{ hostvars[host]['ansible_' + kubeadm_interface]['ipv4']['address'] }}:2379{% endfor %}"
+

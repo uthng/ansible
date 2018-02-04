@@ -1,0 +1,68 @@
+- name: "Init-env | Create all necessary directories"
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "{{ kubeadm_manifest_dir }}"
+    - "{{ kubeadm_pki_etcd_dir }}"
+  tags:
+    - kubeadm-init-env
+    - kubeadm-install
+
+- name: "Init-env | Disable swap"
+  shell: "swapoff -a"
+  tags:
+    - kubeadm-init-env
+    - kubeadm-install
+
+- name: "Init-env | Comment out swap in /etc/fstab"
+  lineinfile:
+    path: '/etc/fstab'
+    regexp: '^(.*)swap(.*)'
+    line: '# \1swap\2'
+    backrefs: yes
+  tags:
+    - kubeadm-init-env
+    - kubeadm-install
+
+# Install transport https
+- name: "Debian | Install necessary packages"
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+    - apt-transport-https
+  tags:
+    - kubeadm-install
+
+- name: "Debian | Install kubernetes repository key"
+  shell: "curl -fsSL {{ kubeadm_key_url }} | sudo apt-key add -"
+  tags:
+    - kubeadm-install
+
+# Install docker engine
+- name: "Debian | Install repo docker for Debian"
+  apt_repository:
+    repo: "{{ kubeadm_repo_url }}"
+    state: present
+  tags:
+    - kubeadm-install
+
+# Install packages kubelet kubeadm kubectl
+- name: "Debian | Install packages: kubelet, kubeadm and kubectl"
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update-cache: yes
+    allow_unauthenticated: yes
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+  tags:
+    - kubeadm-install
+

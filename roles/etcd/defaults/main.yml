@@ -1,0 +1,30 @@
+---
+# defaults file for etcd
+etcd_os_distribution: '{{ ansible_distribution | lower() }'
+etcd_os_release: '{{ ansible_distribution_release | lower() }}'
+etcd_os_distribution_release: '{{ etcd_os_distribution + "-" + etcd_os_release }}'
+
+etcd_user: "{{ ansible_env.USER }}"
+etcd_user_ssh_dir: "{{ ansible_env.HOME }}/.ssh"
+
+# ETCD variables
+etcd_cluster_type: "systemd"
+etcd_version: "v3.1.10"
+etcd_archive: "etcd-{{ etcd_version }}-linux-amd64.tar.gz"
+# 2 types: docker or systemd (considered as external etcd cluster)
+etcd_download_url: "https://github.com/coreos/etcd/releases/download/{{ etcd_version }}/{{ etcd_archive }}"
+
+etcd_interface: "eth0"
+
+etcd_ssh_key_generated: False
+etcd_tls_enabled: True
+etcd_url_cfssl: "https://pkg.cfssl.org/R1.2/cfssl_linux-amd64"
+etcd_url_cfssljson: "https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64"
+etcd_cert_org_name: "vente-privee.com"
+
+etcd_host_cert_dir: "/etc/etcd/certs"
+etcd_host_data_dir: "/data/etcd"
+etcd_initial_cluster_token: "my-etcd-token"
+etcd_initial_cluster_state: "new"
+
+etcd_initial_cluster: "{% set comma = joiner(',') %}{% for host in groups[etcd] %}{{ comma() }}{{ host }}=https://{{ hostvars[host]['ansible_' + etcd_interface]['ipv4']['address'] }}:2380{% endfor %}"

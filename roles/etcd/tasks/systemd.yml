@@ -1,0 +1,36 @@
+- name: "Systemd | Create all necessary directories"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - "{{ etcd_host_data_dir }}"
+  tags:
+    - etcd-systemd-install
+
+- name: "Systemd | Download etcd archive"
+  get_url:
+    url: "{{ etcd_download_url }}"
+    dest: "/tmp/{{ etcd_archive }}"
+  tags:
+    - etcd-systemd-install
+
+- name: "Systemd | Unarchive etcd package"
+  shell: "tar -xzf /tmp/{{ etcd_archive }} --strip-components=1 -C /usr/local/bin/"
+  tags:
+    - etcd-systemd-install
+
+- name: "Systemd | Create etcd systemd service"
+  template:
+    src: "etcd.service.j2"
+    dest: "/etc/systemd/system/etcd.service"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - etcd-systemd-install
+
+- name: "Systemd | Restart etcd daemon"
+  systemd: name=etcd state=restarted daemon-reload=yes
+  tags:
+    - etcd-systemd-install

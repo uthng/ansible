@@ -1,0 +1,28 @@
+---
+# tasks file for k8s-kubeadm
+
+# Include debian playbook for package installation
+- name: "Include Debian playbook"
+  include: "debian.yml"
+  when: ansible_os_family == "Debian"
+  tags:
+    - kubeadm-install
+    - kubeadm-init-env
+
+- name: "Include kubeadm playbook"
+  include: "kubeadm.yml"
+  when: hostvars[inventory_hostname].node_role == "master"
+  tags:
+    - kubeadm-cluster-setup
+
+- name: "Include calico playbook"
+  include: "calico.yml"
+  when: inventory_hostname == kubeadm_master_host
+  tags:
+    - kubeadm-calico-install
+
+- name: "Include worker playbook"
+  include: "worker.yml"
+  when: hostvars[inventory_hostname].node_role == "worker"
+  tags:
+    - kubeadmin-worker-install

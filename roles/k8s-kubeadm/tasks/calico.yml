@@ -1,0 +1,152 @@
+#- name: "Calico | Download calico rbac manifest"
+  #get_url:
+    #url: "{{ kubeadm_calico_rbac_url }}"
+    #dest: "{{ ansible_env.HOME }}/calico_rbac.yaml"
+    #mode: 0755
+    #force: yes
+  #tags:
+    #- kubeadm-calico-install
+    #- kubeadm-calico-config
+
+#- name: "Calico | Download calico manifest"
+  #get_url:
+    #url: "{{ kubeadm_calico_url }}"
+    #dest: "{{ ansible_env.HOME }}/calico.yaml"
+    #mode: 0755
+    #force: yes
+  #tags:
+    #- kubeadm-calico-install
+    #- kubeadm-calico-config
+
+
+#- name: "Calico | Set etcd_endpoints in calico manifest"
+  #replace:
+    #path: "{{ ansible_env.HOME }}/calico.yaml"
+    #regexp: "etcd_endpoints: \"(.*)\"$"
+    #before: "cni_network_config.*"
+    #replace: "etcd_endpoints: \"{{ kubeadm_master_etcd_endpoints }}\""
+  #tags:
+    #- kubeadm-calico-install
+    #- kubeadm-calico-config
+
+#- name: "Calico | Set etcd secrets for certificats in calico manifest"
+  #replace:
+    #path: "{{ ansible_env.HOME }}/calico.yaml"
+    #regexp: '{{ item }}(.*)#(.*)(".*")'
+    #replace: '{{ item }}: \3'
+  #with_items:
+    #- "etcd_ca"
+    #- "etcd_cert"
+    #- "etcd_key"
+  #when: kubeadm_etcd_tls
+  #tags:
+    #- kubeadm-calico-install
+    #- kubeadm-calico-config
+
+- name: "Calico | Read etcd certificats"
+  shell: "base64 -w 0 {{ kubeadm_pki_etcd_dir }}/{{ item }}"
+  register: kubeadm_pki_etcd_base64_certs
+  with_items:
+    - "{{ kubeadm_pki_etcd_ca }}"
+    - "{{ kubeadm_pki_etcd_client }}"
+    - "{{ kubeadm_pki_etcd_client_key }}"
+  when: kubeadm_etcd_tls
+  tags:
+    - kubeadm-calico-install
+    - kubeadm-calico-config
+
+- name: "Calico | Set fact etcd certificats"
+  set_fact: 
+    kubeadm_pki_etcd_base64_ca: "{{ kubeadm_pki_etcd_base64_certs.results[0].stdout }}"
+    kubeadm_pki_etcd_base64_client: "{{ kubeadm_pki_etcd_base64_certs.results[1].stdout }}"
+    kubeadm_pki_etcd_base64_client_key: "{{ kubeadm_pki_etcd_base64_certs.results[2].stdout }}"
+  when: kubeadm_etcd_tls
+  tags:
+    - kubeadm-calico-install
+    - kubeadm-calico-config
+
+- name: "Calico | Copy template calico manifests"
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ ansible_env.HOME }}/{{ item }}"
+  with_items:
+    - "calico_rbac.yaml"
+    - "calico.yaml"
+  tags:
+    - kubeadm-calico-install
+    - kubeadm-calico-config
+
+#- debug:
+    #msg: "{{ kubeadm_pki_etcd_base64_certs }}"
+  #tags:
+    #- kubeadm-calico-install
+    #- kubeadm-calico-config
+
+#- name: "Calico | Populate etcd secrets in calico manifest"
+  #replace:
+    #path: "{{ ansible_env.HOME }}/calico.yaml"
+    #regexp: '#(.*){{ item.1 }}:(.*)'
+    #replace: '{{ item.1 }}: "{{ kubeadm_pki_etcd_base64_certs.results[item.0].stdout }}"'
+  #with_indexed_items:
+    #- "etcd-ca"
+    #- "etcd-cert"
+    #- "etcd-key"
+  #when: kubeadm_etcd_tls
+  #tags:
+    #- kubeadm-calico-install
+    #- kubeadm-calico-config
+
+#- name: "Calico | Insert tolerations "
+  #blockinfile:
+    #path: "{{ ansible_env.HOME }}/calico.yaml"
+    #block: |
+      #tolerations:
+        #- key: node-role.kubernetes.io/master
+          #effect: NoSchedule
+        ## Allow this pod to be rescheduled while the node is in "critical add-ons only" mode.
+        ## This, along with the annotation above marks this pod as a critical add-on.
+        #- key: CriticalAddonsOnly
+          #operator: Exists
+    #insertafter: "{{ item }}"
+    #state: present
+  #with_items:
+    #- "serviceAccountName: calico-node"
+    #- "serviceAccountName: calico-kube-controllers"
+  #tags:
+    #- kubeadm-calico-install
+    #- kubeadm-calico-config
+
+- name: "Calico | Create kubeconfig folder"
+  file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+  tags:
+    - kubeadm-calico-install
+    #- kubeadm-calico-config
+
+- name: "Calico | Copy admin.conf for kubeconfig"
+  copy:
+    src: "{{ kubeadm_kubernetes_dir}}/admin.conf"
+    dest: "{{ ansible_env.HOME }}/.kube/config"
+    owner: "{{ ansible_env.USER }}"
+    group: "{{ ansible_env.USER }}"
+    remote_src: yes
+    mode: 0755
+  tags:
+    - kubeadm-calico-install
+    #- kubeadm-calico-config
+
+- name: "Calico | Apply calico rbac manifest"
+  shell: "kubectl apply -f calico_rbac.yaml"
+  args:
+    chdir: "{{ ansible_env.HOME }}"
+  tags:
+    - kubeadm-calico-install
+
+- name: "Calico | Apply calico manifest"
+  shell: "kubectl apply -f calico.yaml"
+  args:
+    chdir: "{{ ansible_env.HOME }}"
+  tags:
+    - kubeadm-calico-install
+

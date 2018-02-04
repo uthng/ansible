@@ -1,0 +1,51 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby ts=2 expandtab sw=2 st=2:
+
+# Defaults for config options
+$num_instances = 3
+$instance_name_prefix = "k8s"
+$image_name = "debian/stretch64"
+$share_home = false
+$vm_gui = false
+$vm_memory = 1024
+$vm_cpus = 2
+$vb_cpuexecutioncap = 100
+$shared_folders = {}
+$forwarded_ports = {}
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure(2) do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com
+
+  # Setup same image for all nodes
+  config.vm.box = "%s" % $image_name
+
+  # VM Machine ZR
+  (1..$num_instances).each do |i|
+    config.vm.define vm_name = "%s-%02d" % [$instance_name_prefix, i] do |node|
+      node.vm.hostname = vm_name
+
+			config.vm.provider :virtualbox do |vb|
+        vb.gui = $vm_gui
+        vb.memory = $vm_memory
+        vb.cpus = $vm_cpus
+        vb.customize ["modifyvm", :id, "--cpuexecutioncap", "#{$vb_cpuexecutioncap}"]
+      end
+
+      # Assign automatically an ip to node
+      ip = "172.17.8.#{i+10}"
+      node.vm.network :private_network, ip: ip 
+
+      # Provision
+      #node.vm.provision "ansible" do |ansible|
+        #ansible.verbose = "v"
+        #ansible.playbook = "ansible/machine_ZR.yml"
+      #end
+    end
+  end
+end

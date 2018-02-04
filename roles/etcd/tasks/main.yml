@@ -1,0 +1,17 @@
+---
+# tasks file for etcd
+
+# Include debian playbook for package installation
+
+- name: "Include certs playbook"
+  include: "certs.yml"
+  when: etcd_tls_enabled
+  tags:
+    - etcd-certs-install
+
+- name: "Include systemd playbook"
+  include: "systemd.yml"
+  when: etcd_cluster_type == "systemd"
+  tags:
+    - etcd-systemd-install
+
