@@ -18,6 +18,13 @@ swarm_manager_interface: "eth0"
 swarm_node_port: 2377
 swarm_node_address: ""
 swarm_node_interface: "eth0"
+swarm_force_new_cluster: false
+
+# Cronjob to clean up docker system
+swarm_cleanup_auto: false
+# cleanup time is cron format
+swarm_cleanup_time: "0 23 * * *"
+swarm_cleanup_command: "docker system prune -a -f"
 
 # Discovery services
 swarm_container_discovery_service_name: "consul"

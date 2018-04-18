@@ -1,0 +1,10 @@
+- name: Setup cronjob to clean up docker system
+  cron:
+    minute: "{{ swarm_cleanup_time.split(' ')[0] }}"
+    hour: "{{ swarm_cleanup_time.split(' ')[1] }}"
+    day: "{{ swarm_cleanup_time.split(' ')[2] }}"
+    month: "{{ swarm_cleanup_time.split(' ')[3] }}"
+    weekday: "{{ swarm_cleanup_time.split(' ')[4] }}"
+    job: "{{ swarm_cleanup_command }}"
+  tags:
+    - cleanup

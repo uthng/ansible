@@ -37,7 +37,7 @@ vault_conf:
   telemetry: ""
   default_lease_ttl: ""
   max_lease_ttl: ""
-  ui: ""
+  ui: "true"
 
 # Listener TCP parameters
 vault_listener_tcp:

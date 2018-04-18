@@ -7,3 +7,8 @@
 - name: Setup docker swarm cluster in container mode
   include: swarm_container.yml
   when: swarm_cluster_mode == 'container'
+
+- include: cleanup.yml
+  when: swarm_cleanup_auto == true
+  tags:
+    - cleanup

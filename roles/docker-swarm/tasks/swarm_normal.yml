@@ -5,7 +5,7 @@
     - setup-normal
 
 - name: Setup swarm init
-  shell: docker swarm init --advertise-addr={{ hostvars[inventory_hostname]['ansible_' + swarm_manager_interface]['ipv4']['address'] }}:{{ swarm_manager_port }}
+  shell: docker swarm init {{ (swarm_force_new_cluster == true) | ternary('--force-new-cluster','') }} --advertise-addr={{ hostvars[inventory_hostname]['ansible_' + swarm_manager_interface]['ipv4']['address'] }}:{{ swarm_manager_port }}
   register: swarm_initialized
   run_once: true
   when: hostvars[inventory_hostname].swarm_node_role == "manager" and swarm_status.stdout == "inactive"

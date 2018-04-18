@@ -24,7 +24,7 @@
 - name: Launch Vault container
   docker_container:
     name: 'vault'
-    image: 'vault:0.9.0'
+    image: 'vault:0.10.0'
     command: "{{ vault_server_mode }}"
     state: started
     recreate: yes
