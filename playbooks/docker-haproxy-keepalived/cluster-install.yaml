@@ -1,0 +1,178 @@
+# vim:ft=ansible:
+- name: Prepare hosts
+  hosts: "{{ hosts }}"
+  user: root
+  become: yes
+  roles:
+    - { role: hostname }
+    - { role: hosts }
+  vars:
+    hostname_newfqdn: "{{ hostvars[inventory_hostname]['node_fqdn'] }}"
+    hostname_eth_interface: "eth1"
+    hosts_add_basic_ipv6: True
+    hosts_add_ansible_managed_hosts: True
+    hosts_network_interface: "eth1"
+
+
+- name: Install and configure docker engine and docker-compose
+  hosts: "{{ hosts }}"
+  become: yes
+  roles:
+    - { role: docker }
+  vars:
+    docker_install_engine: True
+    docker_install_compose: True
+    docker_configure_daemon: True
+    docker_daemon_options:
+      experimental: True
+
+- name: Install Keepalived
+  hosts: "{{ hosts }}"
+  user: root
+  become: yes
+  roles:
+    - { role: docker-keepalived }
+  vars:
+    keepalived_instance_unicast: false
+    keepalived_script_cmd: "nc {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} 9200 -e ls"
+    keepalived_instance_interface: "eth1"
+    keepalived_instance_virtual_ips: ["172.17.8.3"]
+  tags:
+    - keepalived-install
+
+- name: Install HAProxy
+  hosts: "{{ hosts }}"
+  user: root
+  become: yes
+  roles:
+    - { role: docker-haproxy }
+  vars:
+    # var from vars file
+    env: "ppd"
+    haproxy_frontends:
+      - name: "{{ env }}-eslog"
+        binds: ["*:9200"]
+        acls:
+          - name: "{{ env }}-eslog-dc1-fr"
+            criterion: "hdr(host) -i"
+            patterns: ["eslog.{{ env }}.travel.dc1.fr.vpgrp.io"]
+            use_backend: "{{ env }}-eslog-dc1-fr_pool"
+          - name: "{{ env }}-eslog-dc1-nl"
+            criterion: "hdr(host) -i"
+            patterns: ["eslog.{{ env }}.travel.dc1.nl.vpgrp.io"]
+            use_backend: "{{ env }}-eslog-dc1-nl_pool"
+          - name: "{{ env }}-essrch-dc1-fr"
+            criterion: "hdr(host) -i"
+            patterns: ["essrch.{{ env }}.travel.dc1.fr.vpgrp.io"]
+            use_backend: "{{ env }}-essrch-dc1-fr_pool"
+          - name: "{{ env }}-essrch-dc1-nl"
+            criterion: "hdr(host) -i"
+            patterns: ["essrch.{{ env }}.travel.dc1.nl.vpgrp.io"]
+            use_backend: "{{ env }}-essrch-dc1-nl_pool"
+
+      - name: "{{ env }}-amq"
+        binds: ["*:8161","*:16616"]
+        acls:
+          - name: "{{ env }}-amq-dc1-fr"
+            criterion: "hdr(host) -i"
+            patterns: ["amq.{{ env }}.travel.dc1.fr.vpgrp.io"]
+            use_backend: "{{ env }}-amq-dc1-fr_pool"
+          - name: "{{ env }}-amq-dc1-nl"
+            criterion: "hdr(host) -i"
+            patterns: ["amq.{{ env }}.travel.dc1.nl.vpgrp.io"]
+            use_backend: "{{ env }}-amq-dc1-nl_pool"
+
+      - name: "{{ env }}-cb"
+        binds: ["*:8091"]
+        acls:
+          - name: "{{ env }}-cb-dc1-fr"
+            criterion: "hdr(host) -i"
+            patterns: ["cb.{{ env }}.travel.dc1.fr.vpgrp.io"]
+            use_backend: "{{ env }}-cb-dc1-fr_pool"
+          - name: "{{ env }}-cb-dc1-nl"
+            criterion: "hdr(host) -i"
+            patterns: ["cb.{{ env }}.travel.dc1.nl.vpgrp.io"]
+            use_backend: "{{ env }}-cb-dc1-nl_pool"
+
+    haproxy_backends:
+      - name: "{{ env }}-eslog-dc1-fr_pool"
+        #balance: "roundrobin"
+        #mode: "tcp"
+        servers:
+          - name: "eslog1"
+            host: "eslog1.{{ env }}.travel.dc1.fr.vpgrp.io:9200"
+            #check: yes
+          - name: "eslog2"
+            host: "eslog2.{{ env }}.travel.dc1.fr.vpgrp.io:9200"
+            #check: yes
+          - name: "eslog3"
+            host: "eslog3.{{ env }}.travel.dc1.fr.vpgrp.io:9200"
+            #check: yes
+      - name: "{{ env }}-essrch-dc1-fr_pool"
+        servers:
+          - name: "essrch1"
+            host: "essrch1.{{ env }}.travel.dc1.fr.vpgrp.io:9200"
+          - name: "essrch2"
+            host: "essrch2.{{ env }}.travel.dc1.fr.vpgrp.io:9200"
+          - name: "essrch3"
+            host: "essrch3.{{ env }}.travel.dc1.fr.vpgrp.io:9200"
+      - name: "{{ env }}-amq-dc1-fr_pool"
+        check: "check port 8161"
+        servers:
+          - name: "amq1"
+            host: "amq1.{{ env }}.travel.dc1.fr.vpgrp.io"
+          - name: "amq2"
+            host: "amq2.{{ env }}.travel.dc1.fr.vpgrp.io"
+          - name: "amq3"
+            host: "amq3.{{ env }}.travel.dc1.fr.vpgrp.io"
+      - name: "{{ env }}-cb-dc1-fr_pool"
+        check: "check port 8091"
+        servers:
+          - name: "cb1"
+            host: "cb1.{{ env }}.travel.dc1.fr.vpgrp.io"
+          - name: "cb2"
+            host: "cb2.{{ env }}.travel.dc1.fr.vpgrp.io"
+          - name: "cb3"
+            host: "cb3.{{ env }}.travel.dc1.fr.vpgrp.io"
+
+      - name: "{{ env }}-eslog-dc1-nl_pool"
+        #balance: "roundrobin"
+        #mode: "tcp"
+        servers:
+          - name: "eslog1"
+            host: "eslog1.{{ env }}.travel.dc1.nl.vpgrp.io:9200"
+            #check: yes
+          - name: "eslog2"
+            host: "eslog2.{{ env }}.travel.dc1.nl.vpgrp.io:9200"
+            #check: yes
+          - name: "eslog3"
+            host: "eslog3.{{ env }}.travel.dc1.nl.vpgrp.io:9200"
+            #check: yes
+      - name: "{{ env }}-essrch-dc1-nl_pool"
+        servers:
+          - name: "essrch1"
+            host: "essrch1.{{ env }}.travel.dc1.nl.vpgrp.io:9200"
+          - name: "essrch2"
+            host: "essrch2.{{ env }}.travel.dc1.nl.vpgrp.io:9200"
+          - name: "essrch3"
+            host: "essrch3.{{ env }}.travel.dc1.nl.vpgrp.io:9200"
+      - name: "{{ env }}-amq-dc1-nl_pool"
+        check: "check port 8161"
+        servers:
+          - name: "amq1"
+            host: "amq1.{{ env }}.travel.dc1.nl.vpgrp.io"
+          - name: "amq2"
+            host: "amq2.{{ env }}.travel.dc1.nl.vpgrp.io"
+          - name: "amq3"
+            host: "amq3.{{ env }}.travel.dc1.nl.vpgrp.io"
+      - name: "{{ env }}-cb-dc1-nl_pool"
+        check: "check port 8091"
+        servers:
+          - name: "cb1"
+            host: "cb1.{{ env }}.travel.dc1.nl.vpgrp.io"
+          - name: "cb2"
+            host: "cb2.{{ env }}.travel.dc1.nl.vpgrp.io"
+          - name: "cb3"
+            host: "cb3.{{ env }}.travel.dc1.nl.vpgrp.io"
+  tags:
+    - haproxy-install

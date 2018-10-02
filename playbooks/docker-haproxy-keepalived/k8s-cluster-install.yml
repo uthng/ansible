@@ -1,0 +1,72 @@
+# vim:ft=ansible:
+- name: Prepare hosts
+  hosts: "{{ hosts }}"
+  user: root
+  become: yes
+  roles:
+    - { role: hostname }
+    - { role: hosts }
+  vars:
+    hostname_newfqdn: "{{ hostvars[inventory_hostname]['node_fqdn'] }}"
+    hostname_eth_interface: "eth1"
+    hosts_add_basic_ipv6: True
+    hosts_add_ansible_managed_hosts: True
+    hosts_network_interface: "eth1"
+
+
+- name: Install and configure docker engine and docker-compose
+  hosts: "{{ hosts }}"
+  become: yes
+  roles:
+    - { role: docker }
+  vars:
+    docker_install_engine: True
+    docker_install_compose: True
+    docker_configure_daemon: True
+    docker_daemon_options:
+      experimental: True
+
+- name: Install Keepalived
+  hosts: "{{ hosts }}"
+  user: root
+  become: yes
+  roles:
+    - { role: docker-keepalived }
+  vars:
+    keepalived_instance_unicast: false
+    keepalived_script_cmd: "nc {{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} 6443 -e ls"
+    keepalived_instance_interface: "eth1"
+    keepalived_instance_virtual_ips: ["172.17.8.3"]
+  tags:
+    - keepalived-install
+
+- name: Install HAProxy
+  hosts: "{{ hosts }}"
+  user: root
+  become: yes
+  roles:
+    - { role: docker-haproxy }
+  vars:
+    # var from vars file
+    haproxy_frontends:
+      - name: "k8s"
+        binds: ["*:6443"]
+        default_backend: "k8s_pool"
+
+    haproxy_backends:
+      - name: "k8s_pool"
+        settings: "check port 6443"
+        #balance: "roundrobin"
+        #mode: "tcp"
+        servers:
+          - name: "k8s-01"
+            host: "172.17.8.11"
+            #check: yes
+          #- name: "k8s-02"
+            #host: "172.17.8.12"
+            #check: yes
+          #- name: "k8s-03"
+            #host: "172.17.8.13"
+            #check: yes
+  tags:
+    - haproxy-install
