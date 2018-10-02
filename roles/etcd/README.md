@@ -1,38 +1,75 @@
-Role Name
-=========
+ETCD
+=====================
 
-A brief description of the role goes here.
+This role can be used for deploying `etcd` clusters. It is based on the following guide: [Kubernetes HA guide](https://github.com/kubernetes/website/blob/1998ab735fac0d8ba9063bc3e3009a828e5bb83f/content/en/docs/setup/independent/high-availability.md)
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+* Ansible >= 2.5.4
 
 Role Variables
 --------------
-
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+| Variables | Description | Default |
+|-----------|-------------|---------|
+| etcd_inventory_group | ETCD group in ansible inventory file | "etcd" |
+| etcd_cluster_type | External cluster (systemd) or hosted cluster inside k8s masters (docker) | "systemd" |
+| etcd_version | Etcd version | "v3.1.10" |
+| etcd_interface | Network interface to use | "eth0" |
+| etcd_ssh_key_generated | Generate ssh key or not | False |
+| etcd_tls_enabled | Disable or enable TLS | True |
+| etcd_cert_org_name | Certificat organization name | "your-company.com" |
+| etcd_host_cert_dir | Certificat folder on host machine | "/etc/etcd/certs" |
+| etcd_host_data_dir | Etcd data folder on host machine | "/data/etcd" |
+| etcd_initial_cluster_token | Initial token | "my-etcd-token" |
+| etcd_initial_cluster_state | Initial state | "new" |
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+N/A
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- name: Install etcd
+  hosts: "etcd"
+  user: root
+  become: yes
+  roles:
+    - { role: ansible-etcd }
+  vars:
+    etcd_interface: "eth1"
+    etcd_host_cert_dir: "/etc/kubernetes/pki/etcd"
+    etcd_ssh_key_generated: True
+    etcd_inventory_group: "etcd"
+  tags:
+    - etcd-install
+```
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+Inventory file exemple
+----------------------
 
-License
--------
+No special variable necesary in inventory file for this role.
 
-BSD
+Tests
+-----
 
-Author Information
-------------------
+**Requirements:**
+- Vargant
+- Virtualbox
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+**Description:**
+
+For testing the role, you can use the script test.sh in the test folder. It will do the following steps:
+- Start 3 VMs within Vagrant and set them up as a 3-node ETCD cluster
+- Launch the playbook `test.yml`
+	- Get cluster health with status of each member
+	- Check member's health with the expected ones
+- Destroy all VMs
+
+Contributors
+------------
+
+* Thanh NGUYEN <u.nguyenthanh@gmail.com>

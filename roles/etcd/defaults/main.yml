@@ -6,6 +6,7 @@ etcd_os_distribution_release: '{{ etcd_os_distribution + "-" + etcd_os_release }
 
 etcd_user: "{{ ansible_env.USER }}"
 etcd_user_ssh_dir: "{{ ansible_env.HOME }}/.ssh"
+etcd_inventory_group: "etcd"
 
 # ETCD variables
 etcd_cluster_type: "systemd"
@@ -20,11 +21,11 @@ etcd_ssh_key_generated: False
 etcd_tls_enabled: True
 etcd_url_cfssl: "https://pkg.cfssl.org/R1.2/cfssl_linux-amd64"
 etcd_url_cfssljson: "https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64"
-etcd_cert_org_name: "vente-privee.com"
+etcd_cert_org_name: "your-company.com"
 
 etcd_host_cert_dir: "/etc/etcd/certs"
 etcd_host_data_dir: "/data/etcd"
 etcd_initial_cluster_token: "my-etcd-token"
 etcd_initial_cluster_state: "new"
 
-etcd_initial_cluster: "{% set comma = joiner(',') %}{% for host in groups[etcd] %}{{ comma() }}{{ host }}=https://{{ hostvars[host]['ansible_' + etcd_interface]['ipv4']['address'] }}:2380{% endfor %}"
+etcd_initial_cluster: "{% set comma = joiner(',') %}{% for host in groups[etcd_inventory_group] %}{{ comma() }}{{ host }}=https://{{ hostvars[host]['ansible_' + etcd_interface]['ipv4']['address'] }}:2380{% endfor %}"

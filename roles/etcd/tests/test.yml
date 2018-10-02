@@ -1,5 +1,28 @@
 ---
-- hosts: localhost
-  remote_user: root
-  roles:
-    - etcd
+
+- name: "Test cluster health"
+  hosts: "{{ groups['etcd'][0] }}"
+  become: yes
+  any_errors_fatal: true
+  #force_handlers: true
+  tasks:
+    - name: "Get cluster health"
+      shell: "etcdctl --cert-file /etc/kubernetes/pki/etcd/client.pem --key-file /etc/kubernetes/pki/etcd/client-key.pem --ca-file /etc/kubernetes/pki/etcd/ca.pem --endpoints https://172.17.8.21:2379 cluster-health | cut -d' ' -f4,9"
+      register: cluster_health
+
+    - debug:
+        msg: "{{ cluster_health }}"
+
+    - name: "Check cluster member health"
+      assert:
+        that:
+          - "'{{ item.0 }}' == '{{ item.1|trim }}'"
+      with_together:
+        - "{{ members_health }}"
+        - "{{ cluster_health.stdout_lines }}"
+
+  vars:
+    members_health:
+      - "healthy: https://172.17.8.21:2379"
+      - "healthy: https://172.17.8.22:2379"
+      - "healthy: https://172.17.8.23:2379"

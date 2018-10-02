@@ -1,0 +1,14 @@
+# vim:ft=ansible:
+- name: Install etcd
+  hosts: "etcd"
+  user: root
+  become: yes
+  roles:
+    - { role: ansible-etcd }
+  vars:
+    etcd_interface: "eth1"
+    etcd_host_cert_dir: "/etc/kubernetes/pki/etcd"
+    etcd_ssh_key_generated: True
+    etcd_inventory_group: "etcd"
+  tags:
+    - etcd-install
