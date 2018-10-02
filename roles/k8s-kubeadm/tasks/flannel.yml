@@ -1,0 +1,20 @@
+- name: "Flannel | Customize sysctl"
+  copy:
+    src: "etc_sysctl.d_flannel.conf"
+    dest: "/etc/sysctl.d/flannel.conf"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - kubeadm-flannel-install
+
+- name: "Flannel | Reload sysctl"
+  shell: "sysctl --system"
+  tags:
+    - kubeadm-flannel-install
+
+- name: "Flannel | Install flannel from manifest"
+  shell: "kubectl apply -f {{ kubeadm_flannel_url }}"
+  when: inventory_hostname == kubeadm_master_host
+  tags:
+    - kubeadm-flannel-install

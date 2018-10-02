@@ -40,6 +40,6 @@
     #- kubeadm-worker-install
 
 - name: "Worker | Join to the cluster"
-  shell: "kubeadm join --token {{ kubeadm_worker_join_token }} {{ kubeadm_master_host_ip }}:6443 --discovery-token-ca-cert-hash {{ kubeadm_worker_ca_hash }}"
+  shell: "kubeadm join --token {{ kubeadm_worker_join_token }} {{ kubeadm_load_balancer_vip }}:6443 --discovery-token-ca-cert-hash {{ kubeadm_worker_ca_hash }}"
   tags:
     - kubeadm-worker-install

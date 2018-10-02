@@ -17,9 +17,15 @@
 
 - name: "Include calico playbook"
   include: "calico.yml"
-  when: inventory_hostname == kubeadm_master_host
+  when: inventory_hostname == kubeadm_master_host and kubeadm_network == "calico"
   tags:
     - kubeadm-calico-install
+
+- name: "Include flannel playbook"
+  include: "flannel.yml"
+  when: kubeadm_network == "flannel"
+  tags:
+    - kubeadm-flannel-install
 
 - name: "Include worker playbook"
   include: "worker.yml"
