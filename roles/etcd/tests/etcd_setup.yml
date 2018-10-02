@@ -4,7 +4,7 @@
   user: root
   become: yes
   roles:
-    - { role: ansible-etcd }
+    - { role: etcd }
   vars:
     etcd_interface: "eth1"
     etcd_host_cert_dir: "/etc/kubernetes/pki/etcd"
