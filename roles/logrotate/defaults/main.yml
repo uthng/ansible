@@ -1,0 +1,33 @@
+---
+# defaults file for logrotate
+logrotate_distribution: '{{ ansible_distribution | lower() }}'
+logrotate_release: '{{ ansible_distribution_release | lower() }}'
+logrotate_distribution_release: '{{ logrotate_distribution + "-" + logrotate_release }}'
+
+logrotate_install_enabled: false
+
+logrotate_default_period: "daily"
+logrotate_default_rotation: 7
+
+
+logrotate_default_options: |
+  {{ logrotate_default_period }}
+  rotate {{ logrotate_default_rotation }}
+  compress
+  missingok
+  delaycompress
+  copytruncate
+  notifyempty
+
+# Ex:
+# logrotate_logs:
+  #- name: docker
+    #files:
+      #- /var/lib/docker/containers/*.log
+    #options:
+      #- "rotate 7"
+      #- daily
+      #- missingok
+      #- notifempty
+      #- compress
+logrotate_logs: []

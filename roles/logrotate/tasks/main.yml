@@ -1,0 +1,23 @@
+---
+# tasks file for logrotate
+
+# Include Debian for package installation
+- name: "Install logrotate"
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - logrotate
+  when: logrotate_install_enabled and ansible_os_family == "Debian"
+  tags:
+    - logrorate-install
+
+- name: "Copy logrotate configuration file"
+  template:
+    src: logrotate.j2
+    dest: "/etc/logrotate.d/ansible_logrotate_{{ item.name }}"
+    mode: 0644
+  with_items:
+    - "{{ logrotate_logs }}"
+  tags:
+    - logrotate-configure
