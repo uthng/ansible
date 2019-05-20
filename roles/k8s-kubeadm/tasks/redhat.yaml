@@ -1,0 +1,73 @@
+- name: "Init-env | Create all necessary directories"
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - "{{ kubeadm_manifest_dir }}"
+    - "{{ kubeadm_pki_etcd_dir }}"
+  tags:
+    - kubeadm-init-env
+    - kubeadm-install
+
+- name: "Init-env | Disable swap"
+  shell: "swapoff -a"
+  tags:
+    - kubeadm-init-env
+    - kubeadm-install
+
+- name: "Init-env | Comment out swap in /etc/fstab"
+  lineinfile:
+    path: '/etc/fstab'
+    regexp: '^(.*)swap(.*)'
+    line: '# \1swap\2'
+    backrefs: yes
+  tags:
+    - kubeadm-init-env
+    - kubeadm-install
+
+# Set SELinux to permissive mode
+- name: "RedHat | Set SELinux to permissive mode"
+  shell: |
+    setenforce 0
+    sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+  tags:
+    - kubeadm-init-env
+    - kubeadm-install
+
+# Install docker engine
+- name: "Redhat | Install Kubeadm repo"
+  yum_repository:
+    name: Kubernetes
+    baseurl: "{{ kubeadm_repo_url }}"
+    gpgkey: "{{ kubeadm_key_url }}"
+    gpgcheck: yes
+    repo_gpgcheck: yes
+    exclude: "kube*"
+    state: present
+  tags:
+    - kubeadm-install
+
+# Install packages kubelet kubeadm kubectl
+- name: "Debian | Install packages: kubelet, kubeadm and kubectl"
+  yum:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+    disable_excludes: kubernetes
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+  tags:
+    - kubeadm-install
+
+- name: "RedHat | Enable kubelet"
+  systemd:
+    name: kubelet
+    enabled: yes
+    state: started
+  tags:
+    - kubeadm-install

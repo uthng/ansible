@@ -1,0 +1,4 @@
+---
+# vars file for k8s-kubeadm
+kubeadm_key_url: "http://packages.cloud.google.com/apt/doc/apt-key.gpg"
+kubeadm_repo_url: "deb http://apt.kubernetes.io/ kubernetes-xenial main"

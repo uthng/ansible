@@ -1,0 +1,2 @@
+kubeadm_key_url: "https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
+kubeadm_repo_url: "https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64"

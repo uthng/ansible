@@ -1,10 +1,14 @@
 ---
 # tasks file for k8s-kubeadm
+# Include specific variables to OS
+- name: "Include OS specific variables"
+  include_vars: "{{ ansible_os_family|lower }}.yml"
+  tags:
+    - always
 
-# Include debian playbook for package installation
-- name: "Include Debian playbook"
-  include: "debian.yml"
-  when: ansible_os_family == "Debian"
+  # Include OS playbook for package installation
+- name: "Include OS package installation"
+  include: "{{ ansible_os_family|lower }}.yml"
   tags:
     - kubeadm-install
     - kubeadm-init-env
