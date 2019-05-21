@@ -12,7 +12,7 @@
 - name: "Certs | Install cfssl"
   get_url:
     url: "{{ etcd_url_cfssl }}"
-    dest: "/usr/local/bin/cfssl"
+    dest: "{{ etcd_cfssl_bin }}"
     mode: 0755
   tags:
     - etcd-certs-install
@@ -20,7 +20,7 @@
 - name: "Certs | Install cfssljson"
   get_url:
     url: "{{ etcd_url_cfssljson }}"
-    dest: "/usr/local/bin/cfssljson"
+    dest: "{{ etcd_cfssljson_bin }}"
     mode: 0755
   tags:
     - etcd-certs-install
@@ -63,12 +63,12 @@
 # Generate certificates on the first ETCD server
 - block:
   - name: "Certs | Generate CA certs"
-    shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca -"
+    shell: "{{ etcd_cfssl_bin }} gencert -initca ca-csr.json | {{ etcd_cfssljson_bin }} -bare ca -"
     args:
       chdir: "{{ etcd_host_cert_dir }}"
 
   - name: "Certs | Generate client certs"
-    shell: "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client client.json | cfssljson -bare client"
+    shell: "{{ etcd_cfssl_bin }} gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client client.json | {{ etcd_cfssljson_bin }} -bare client"
     args:
       chdir: "{{ etcd_host_cert_dir }}"
 
@@ -140,7 +140,7 @@
 
 # Generate server & peer certs on all etcd servers
 - name: "Certs | Generate server and peer certs"
-  shell: "cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile={{ item }} config.json | cfssljson -bare {{ item }}"
+  shell: "{{ etcd_cfssl_bin }} gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile={{ item }} config.json | {{ etcd_cfssljson_bin }} -bare {{ item }}"
   args:
     chdir: "{{ etcd_host_cert_dir }}"
   with_items:

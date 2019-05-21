@@ -10,7 +10,7 @@ etcd_inventory_group: "etcd"
 
 # ETCD variables
 etcd_cluster_type: "systemd"
-etcd_version: "v3.1.10"
+etcd_version: "v3.3.13"
 etcd_archive: "etcd-{{ etcd_version }}-linux-amd64.tar.gz"
 # 2 types: docker or systemd (considered as external etcd cluster)
 etcd_download_url: "https://github.com/coreos/etcd/releases/download/{{ etcd_version }}/{{ etcd_archive }}"
@@ -21,6 +21,8 @@ etcd_ssh_key_generated: False
 etcd_tls_enabled: True
 etcd_url_cfssl: "https://pkg.cfssl.org/R1.2/cfssl_linux-amd64"
 etcd_url_cfssljson: "https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64"
+etcd_cfssl_bin: /usr/local/bin/cfssl
+etcd_cfssljson_bin: /usr/local/bin/cfssljson
 etcd_cert_org_name: "your-company.com"
 
 etcd_host_cert_dir: "/etc/etcd/certs"
