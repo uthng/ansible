@@ -1,0 +1,83 @@
+# vim:ft=ansible:
+- name: Prepare hosts
+  hosts: "k8s"
+  user: root
+  become: yes
+  roles:
+    - { role: hostname }
+    - { role: hosts }
+  vars:
+    hostname_newfqdn: "{{ hostvars[inventory_hostname]['node_fqdn'] }}"
+    hostname_eth_interface: "eth1"
+    hosts_add_basic_ipv6: True
+    hosts_add_ansible_managed_hosts: True
+    hosts_network_interface: "eth1"
+  tags:
+    - hosts-prepare
+
+- name: Install and configure docker engine and docker-compose
+  hosts: "k8s"
+  become: yes
+  roles:
+    - { role: docker }
+  vars:
+    docker_package: "docker-ce"
+    docker_install_engine: True
+    docker_install_compose: True
+    docker_configure_daemon: True
+    docker_daemon_options:
+      experimental: True
+  tags:
+    - docker-install
+
+#- name: Install ssh key
+  #hosts: "{{ k8s }}"
+  #become: yes
+  #tasks:
+    #- file:
+        #path: "{{ ansible_env.HOME }}/.ssh"
+        #state: directory
+
+    #- name: Add authorized key
+      #authorized_key:
+        #user: "{{ ansible_env.USER }}"
+        #state: present
+        #key: "{{ lookup('file', '/data/Projets/VP/ssh-keys/ssh_servers.pub') }}"
+    #- name: Copy ssh private key
+      #copy:
+        #src: /data/Projets/VP/ssh-keys/ssh_servers
+        #dest: "{{ ansible_env.HOME }}/.ssh/id_rsa"
+        #mode: 0600
+
+  #tags:
+    #- sshkey-install
+
+
+#- name: Install etcd
+  #hosts: "{{ etcd }}"
+  #become: yes
+  #roles:
+    #- { role: etcd }
+  #vars:
+    #etcd_interface: "eth1"
+    #etcd_host_cert_dir: "/etc/kubernetes/pki/etcd"
+  #tags:
+    #- etcd-install
+
+#- name: Install Kubeadm
+  #hosts: "{{ k8s }}"
+  #user: root
+  #become: yes
+  #roles:
+    #- { role: k8s-kubeadm }
+  #vars:
+    #kubeadm_interface: "eth1"
+    ##kubeadm_pod_subnet: "10.244.0.0/16"
+    #kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.3"]
+    #kubeadm_load_balancer_vip: "172.17.8.3"
+    ##kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.13","172.17.8.21", "172.17.8.3"]
+    ##kubeadm_pki_etcd_src: "remote"
+    ##kubeadm_pki_etcd_src_server: "172.17.8.11"
+    ##kubeadm_pki_etcd_src_dir: "/etc/etcd/certs"
+  #tags:
+    #- k8s-install
