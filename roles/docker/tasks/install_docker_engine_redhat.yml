@@ -1,0 +1,102 @@
+
+- name: "Redhat | Remove unnecessary python packages"
+  pip:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - docker-py
+  when: docker_install_engine
+  ignore_errors: yes
+  tags:
+    - docker-engine-install
+
+- name: "Redhat | Add Docker GPG key"
+  rpm_key:
+    key: "{{ docker_key_url }}"
+    state: present
+  tags:
+    - docker-engine-install
+
+- name: "Redhat | Add Docker repository."
+  get_url:
+    url: "{{ docker_repo_url }}"
+    dest: '/etc/yum.repos.d/docker-ce.repo'
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - docker-engine-install
+
+# Install docker engine
+- name: "Redhat | Install Centos 7 repo"
+  yum_repository:
+    name: Centos-7
+    description: Centos 7
+    baseurl: "http://ftp.heanet.ie/pub/centos/7/os/x86_64/"
+    gpgkey: "http://ftp.heanet.ie/pub/centos/7/os/x86_64/RPM-GPG-KEY-CentOS-7"
+    gpgcheck: yes
+    repo_gpgcheck: yes
+    state: present
+  tags:
+    - docker-engine-install
+
+# Remove old docker packages
+- name: "RedHat | Remove "
+  shell: "yum erase -y container-selinux"
+  when: docker_install_engine
+  ignore_errors: yes
+  tags:
+    - docker-engine-install
+
+- name: "Redhat | Install manually container-selinux package"
+  shell: "yum -y update && yum install -y http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.74-1.el7.noarch.rpm"
+  tags:
+    - docker-engine-install
+
+# Remove old docker packages
+- name: "RedHat | Remove "
+  yum:
+    name: "['docker-ce', 'docker-client', 'docker-client-latest', 'docker-common', 'docker-latest', 'docker-latest-logrotate', 'docker-logrotate', 'docker-engine']"
+    state: absent
+  when: docker_install_engine
+  ignore_errors: yes
+  tags:
+    - docker-engine-install
+# Install EPEL (Extra Packages for Enterprise Linux)
+#- name: "Redhat | Install EPEL"
+  #yum:
+    #name: "{{ item }}"
+    #state: present
+    #update_cache: yes
+  #with_items:
+    #- epel-release
+  #when: docker_install_engine
+  #tags:
+    #- docker-engine-install
+
+- name: "Redhat | Install necessary packages"
+  yum:
+    name: "['{{ docker_package }}', 'docker-ce-cli', 'containerd.io', 'python-pip']"
+    state: present
+  when: docker_install_engine
+  notify: docker start
+  tags:
+    - docker-engine-install
+
+  # Install pip
+- name: "Redhat | Update PIP package"
+  pip:
+    name: pip
+    state: latest
+  when: docker_install_engine
+  tags:
+    - docker-engine-install
+
+- name: "Redhat | Install docker-py package"
+  pip:
+    name: docker-py
+    state: present
+  when: docker_install_engine
+  tags:
+    - docker-engine-install
+

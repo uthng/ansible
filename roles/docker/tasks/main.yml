@@ -1,10 +1,16 @@
 ---
 # tasks file for u.docker
 
+# Include specific variables to OS
+- name: "Include OS specific variables"
+  include_vars: "{{ ansible_os_family|lower }}.yml"
+  tags:
+    - always
+
 # Include Debian for package installation
-- name : "Include Debian yaml"
-  include: "install_docker_engine_debian.yml"
-  when: docker_install_engine and ansible_os_family == "Debian"
+- name : "Include OS specific installation"
+  include: "install_docker_engine_{{ ansible_os_family|lower }}.yml"
+  when: docker_install_engine
   tags:
     - docker-engine-install
 

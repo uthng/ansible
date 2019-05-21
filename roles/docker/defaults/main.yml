@@ -12,8 +12,6 @@ docker_configure_daemon: False
 docker_package: "docker-ce"
 
 # URL for repository or download
-docker_key_url: "https://download.docker.com/linux/{{ docker_distribution }}/gpg"
-docker_repo_url: "deb [arch=amd64] https://download.docker.com/linux/{{ docker_distribution }} {{ docker_release}} stable"
 docker_compose_dl_url: "https://github.com/docker/compose/releases/download/1.17.0"
 
 # docker daemon options

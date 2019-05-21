@@ -1,5 +1,5 @@
 {
-{% for key, value in docker_daemon_options.iteritems() recursive %}
+{% for key, value in docker_daemon_options.items() recursive %}
 {# for key, value in opt.iteritems() recursive #}
 {#- Save loop depth for indent correctly -#}
 {%- set depth = loop.depth -%}
@@ -23,10 +23,9 @@
 {# Case of object #}
 {% else %}
 {{'  ' * (depth+1)}}"{{ key }}": {
-{{ loop(value.iteritems()) -}}
+{{ loop(value.items()) -}}
 {{'  ' * (depth+1)}}}
 {% endif %}{# if value type #}
 {# endfor #}{# loop key,value #}
 {% endfor %} {# opt loop #}
-
 }

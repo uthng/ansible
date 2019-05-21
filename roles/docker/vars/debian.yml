@@ -1,0 +1,4 @@
+---
+# vars file for u.docker
+docker_key_url: "https://download.docker.com/linux/{{ docker_distribution }}/gpg"
+docker_repo_url: "deb [arch=amd64] https://download.docker.com/linux/{{ docker_distribution }} {{ docker_release}} stable"
