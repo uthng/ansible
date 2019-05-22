@@ -27,6 +27,7 @@
     docker_configure_daemon: True
     docker_daemon_options:
       experimental: True
+      exec-opts: ["native.cgroupdriver=systemd"]
   tags:
     - docker-install
 
@@ -53,31 +54,33 @@
     #- sshkey-install
 
 
-#- name: Install etcd
-  #hosts: "{{ etcd }}"
-  #become: yes
-  #roles:
-    #- { role: etcd }
-  #vars:
-    #etcd_interface: "eth1"
-    #etcd_host_cert_dir: "/etc/kubernetes/pki/etcd"
-  #tags:
-    #- etcd-install
+- name: Install etcd
+  hosts: "etcd"
+  become: yes
+  roles:
+    - { role: etcd }
+  vars:
+    etcd_interface: "eth1"
+    etcd_host_cert_dir: "/etc/kubernetes/pki/etcd"
+    etcd_cert_org_name: "dittobank.com"
+  tags:
+    - etcd-install
 
-#- name: Install Kubeadm
-  #hosts: "{{ k8s }}"
-  #user: root
-  #become: yes
-  #roles:
-    #- { role: k8s-kubeadm }
-  #vars:
-    #kubeadm_interface: "eth1"
-    ##kubeadm_pod_subnet: "10.244.0.0/16"
-    #kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.3"]
-    #kubeadm_load_balancer_vip: "172.17.8.3"
-    ##kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.13","172.17.8.21", "172.17.8.3"]
-    ##kubeadm_pki_etcd_src: "remote"
-    ##kubeadm_pki_etcd_src_server: "172.17.8.11"
-    ##kubeadm_pki_etcd_src_dir: "/etc/etcd/certs"
-  #tags:
-    #- k8s-install
+- name: Install Kubeadm
+  hosts: "k8s"
+  user: root
+  become: yes
+  roles:
+    - { role: k8s-kubeadm }
+  vars:
+    kubeadm_interface: "eth1"
+    #kubeadm_pod_subnet: "10.244.0.0/16"
+    kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.3"]
+    kubeadm_load_balancer_vip: "172.17.8.3"
+    kubeadm_etcd_servers: "{{ groups['etcd'] }}"
+    #kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.13","172.17.8.21", "172.17.8.3"]
+    #kubeadm_pki_etcd_src: "remote"
+    #kubeadm_pki_etcd_src_server: "172.17.8.11"
+    #kubeadm_pki_etcd_src_dir: "/etc/etcd/certs"
+  tags:
+    - k8s-install
