@@ -37,21 +37,40 @@
     - kubeadm-init-env
     - kubeadm-install
 
+- name: "Redhat | Load br_netfilter module"
+  modprobe:
+    name: br_netfilter
+    state: present
+  tags:
+    - kubeadm-init-env
+    - kubeadm-install
+
+- name: "Redhat | Configure iptables"
+  copy:
+    dest: /etc/sysctl.d/k8s.conf
+    content: |
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+  tags:
+    - kubeadm-init-env
+    - kubeadm-install
+
 # Install docker engine
 - name: "Redhat | Install Kubeadm repo"
   yum_repository:
     name: Kubernetes
+    description: Kubernetes repo
     baseurl: "{{ kubeadm_repo_url }}"
     gpgkey: "{{ kubeadm_key_url }}"
     gpgcheck: yes
     repo_gpgcheck: yes
-    exclude: "kube*"
+    #exclude: "kube*"
     state: present
   tags:
     - kubeadm-install
 
 # Install packages kubelet kubeadm kubectl
-- name: "Debian | Install packages: kubelet, kubeadm and kubectl"
+- name: "Redhat | Install packages: kubelet, kubeadm and kubectl"
   yum:
     name: "{{ item }}"
     state: latest
@@ -68,6 +87,5 @@
   systemd:
     name: kubelet
     enabled: yes
-    state: started
   tags:
     - kubeadm-install
