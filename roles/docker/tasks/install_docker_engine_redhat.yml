@@ -54,7 +54,7 @@
     - docker-engine-install
 
 # Remove old docker packages
-- name: "RedHat | Remove "
+- name: "RedHat | Remove old docker packages"
   yum:
     name: "['docker-ce', 'docker-client', 'docker-client-latest', 'docker-common', 'docker-latest', 'docker-latest-logrotate', 'docker-logrotate', 'docker-engine']"
     state: absent
@@ -62,17 +62,6 @@
   ignore_errors: yes
   tags:
     - docker-engine-install
-# Install EPEL (Extra Packages for Enterprise Linux)
-#- name: "Redhat | Install EPEL"
-  #yum:
-    #name: "{{ item }}"
-    #state: present
-    #update_cache: yes
-  #with_items:
-    #- epel-release
-  #when: docker_install_engine
-  #tags:
-    #- docker-engine-install
 
 - name: "Redhat | Install necessary packages"
   yum:
@@ -80,6 +69,13 @@
     state: present
   when: docker_install_engine
   notify: docker start
+  tags:
+    - docker-engine-install
+
+- name: "Redhat | Enable docker at boot with systemd"
+  systemd:
+    name: docker
+    enabled: yes
   tags:
     - docker-engine-install
 
