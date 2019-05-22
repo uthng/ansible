@@ -18,7 +18,7 @@
 {% if not loop.last %}{% set sep1 = "," %}{% else %}{% set sep1 = "" %}{% endif %}
 "{{ val }}"{{ sep1 }}
 {%- endfor -%}
-],
+]{{ sep }}
 {% endif %}{# if value|length #}
 {# Case of object #}
 {% else %}
