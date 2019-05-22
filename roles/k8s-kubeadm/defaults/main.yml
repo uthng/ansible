@@ -8,6 +8,8 @@ kubeadm_os_distribution_release: '{{ kubeadm_os_distribution + "-" + kubeadm_os_
 kubeadm_interface: "eth0"
 kubeadm_pod_subnet: "192.168.0.0/16"
 
+kubeadm_default_ports: ["6443/tcp", "10250/tcp"]
+
 kubeadm_kubernetes_dir: "/etc/kubernetes"
 kubeadm_manifest_dir: "{{ kubeadm_kubernetes_dir}}/manifests"
 kubeadm_pki_dir: "{{ kubeadm_kubernetes_dir }}/pki"
@@ -29,6 +31,8 @@ kubeadm_pki_etcd_client_key: "client-key.pem"
 
 
 kubeadm_etcd_tls: True
+kubeadm_etcd_servers: "{{ groups['etcd'] }}"
+
 kubeadm_network: "calico"
 #kubeadm_calico_rbac_url: "https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/rbac.yaml"
 #kubeadm_calico_url: "https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/calico.yaml"
@@ -40,5 +44,5 @@ kubeadm_flannel_url: "https://raw.githubusercontent.com/coreos/flannel/master/Do
 #kubeadm_worker_hash_ca: ""
 
 # Set this variable for designing a host master for installation
-kubeadm_master_etcd_endpoints: "{% set comma = joiner(',') %}{% for host in groups[etcd] %}{{ comma()}}https://{{ hostvars[host]['ansible_' + kubeadm_interface]['ipv4']['address'] }}:2379{% endfor %}"
+kubeadm_master_etcd_endpoints: "{% set comma = joiner(',') %}{% for host in kubeadm_etcd_servers %}{{ comma()}}https://{{ hostvars[host]['ansible_' + kubeadm_interface]['ipv4']['address'] }}:2379{% endfor %}"
 

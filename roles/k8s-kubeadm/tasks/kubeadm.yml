@@ -28,6 +28,18 @@
   tags:
     - kubeadm-cluster-setup
 
+- name: "Kubeadm | Open default ports"
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    zone: public
+    immediate: yes
+    state: enabled
+  with_items:
+    - "{{ kubeadm_default_ports }}"
+  tags:
+    - kubeadm-cluster-setup
+
 - name: "Kubeadm | Initialize 1st master"
   shell: "kubeadm init --config=$HOME/config.yml"
   register: master_initialized

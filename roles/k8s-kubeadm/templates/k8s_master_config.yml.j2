@@ -1,20 +1,23 @@
-apiVersion: kubeadm.k8s.io/v1alpha1
-kind: MasterConfiguration
-api:
-  advertiseAddress: {{ hostvars[inventory_hostname]['ansible_' + kubeadm_interface]['ipv4']['address'] }}
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+clusterName: k8s-test
+controlPlaneEndpoint: {{ kubeadm_load_balancer_vip }}
 etcd:
-  endpoints:
-  {% for ep in kubeadm_master_etcd_endpoints.split(',')|list -%}
-  - {{ ep }}
-  {% endfor -%}
-  caFile: {{ kubeadm_pki_etcd_dir }}/ca.pem
-  certFile: {{ kubeadm_pki_etcd_dir }}/client.pem
-  keyFile: {{ kubeadm_pki_etcd_dir }}/client-key.pem
+  external:
+    endpoints:
+    {% for ep in kubeadm_master_etcd_endpoints.split(',')|list -%}
+    - {{ ep }}
+    {% endfor -%}
+    caFile: {{ kubeadm_pki_etcd_dir }}/ca.pem
+    certFile: {{ kubeadm_pki_etcd_dir }}/client.pem
+    keyFile: {{ kubeadm_pki_etcd_dir }}/client-key.pem
 networking:
   podSubnet: {{ kubeadm_pod_subnet }}
-apiServerCertSANs:
-{% for server in kubeadm_apiserver_cert_sans -%}
-- {{ server }}
-{% endfor -%}
-apiServerExtraArgs:
-  endpoint-reconciler-type: "lease"
+apiServer:
+  extraArgs:
+    advertise-address: {{ hostvars[inventory_hostname]['ansible_' + kubeadm_interface]['ipv4']['address'] }}
+    endpoint-reconciler-type: "lease"
+  certSANs:
+  {% for server in kubeadm_apiserver_cert_sans -%}
+  - {{ server }}
+  {% endfor -%}
