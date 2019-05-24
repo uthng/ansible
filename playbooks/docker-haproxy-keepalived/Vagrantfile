@@ -42,10 +42,22 @@ Vagrant.configure(2) do |config|
       node.vm.network :private_network, ip: ip 
 
       # Provision
-      #node.vm.provision "ansible" do |ansible|
-        #ansible.verbose = "v"
-        #ansible.playbook = "ansible/machine_ZR.yml"
-      #end
+      # Only execute provision when all machines are up
+      if i == $num_instances
+        node.vm.provision "ansible" do |ansible|
+          # Set limit to all for ansble being to able to connect
+          # to all vms at the same time
+          ansible.limit = "all"
+          ansible.verbose = "v"
+          ansible.playbook = "k8s-cluster-install.yml"
+          ansible.groups = {
+            "has" => ["ha-01"]
+          }
+          ansible.host_vars = {
+            "ha-01" => { "node_fqdn" => "ha-01", "node_role" => "master" }
+          }
+        end
+      end
     end
   end
 end

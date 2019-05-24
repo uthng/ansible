@@ -10,6 +10,8 @@ kubeadm_pod_subnet: "192.168.0.0/16"
 
 kubeadm_default_ports: ["6443/tcp", "10250/tcp"]
 
+kubeadm_default_packages: ["kubelet", "kubeadm", "kubectl"]
+
 kubeadm_kubernetes_dir: "/etc/kubernetes"
 kubeadm_manifest_dir: "{{ kubeadm_kubernetes_dir}}/manifests"
 kubeadm_pki_dir: "{{ kubeadm_kubernetes_dir }}/pki"
@@ -30,19 +32,29 @@ kubeadm_pki_etcd_client: "client.pem"
 kubeadm_pki_etcd_client_key: "client-key.pem"
 
 
+# Set kube join token & ca hash for all nodes: masters & workers
+kubeadm_master_host: ""
+kubeadm_join_token: ""
+kubeadm_ca_hash: ""
+
 kubeadm_etcd_tls: True
 kubeadm_etcd_servers: "{{ groups['etcd'] }}"
 
 kubeadm_network: "calico"
-#kubeadm_calico_rbac_url: "https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/rbac.yaml"
-#kubeadm_calico_url: "https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/calico.yaml"
+# Default podSubnet by network type
+kubeadm_network_podsubnet:
+  calico: "192.169.0.0/16"
+  flannel: "10.244.0.0/16"
 
+# CALICO
+kubeadm_calico_url: "https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/calico.yaml"
+
+# FLANNEL
 kubeadm_flannel_url: "https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
 
-# Set kubeadm_worker_join_token if we want to setup only worker
-#kubeadm_worker_join_token: ""
-#kubeadm_worker_hash_ca: ""
-
+# INTERNAL VARIABLES AUTOMATICALLY COMPUTED
 # Set this variable for designing a host master for installation
 kubeadm_master_etcd_endpoints: "{% set comma = joiner(',') %}{% for host in kubeadm_etcd_servers %}{{ comma()}}https://{{ hostvars[host]['ansible_' + kubeadm_interface]['ipv4']['address'] }}:2379{% endfor %}"
 
+kubeadm_master_host_ip: "{{ hostvars[kubeadm_master_host]['ansible_' + kubeadm_interface]['ipv4']['address'] }}"
+kubeadm_pod_subnet: "{{ kubeadm_network_podsubnet[kubeadm_network] }}"

@@ -1,0 +1,33 @@
+# Check if kubeadm_join_token and kubeadm_ca_hash are set
+# if not, generate them from master
+- block:
+  - name: "Token | Get list token on master"
+    shell: "kubeadm token list | tail -n +2 | awk -F' ' '{print $1}'"
+    register: token_list
+    run_once: yes
+
+  - name: "Token | Create a new token if there is noone in the list"
+    shell: "kubeadm token create"
+    register: token
+    run_once: yes
+    when: token_list.rc == 0 and token_list.stdout == ''
+
+  - name: "Token | Set variable join token found in the list token"
+    set_fact:
+      kubeadm_join_token: "{{ token_list.stdout }}"
+    run_once: yes
+    when: token_list.rc == 0 and token_list.stdout != ''
+
+  - name: "Token | Generate CA hash"
+    shell: "openssl x509 -pubkey -in {{ kubeadm_pki_dir }}/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* /sha256:/'"
+    register: ca_hash
+    run_once: yes
+
+  - name: "Token | Set variable ca hash"
+    set_fact:
+      kubeadm_ca_hash: "{{ ca_hash.stdout }}"
+    run_once: yes
+    when: ca_hash.rc == 0 and ca_hash.stdout != ''
+
+  tags:
+    - kubeadm-token-get

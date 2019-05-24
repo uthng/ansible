@@ -72,14 +72,10 @@
 # Install packages kubelet kubeadm kubectl
 - name: "Redhat | Install packages: kubelet, kubeadm and kubectl"
   yum:
-    name: "{{ item }}"
+    name: "{{ kubeadm_default_packages }}"
     state: latest
     update_cache: yes
     disable_excludes: kubernetes
-  with_items:
-    - kubelet
-    - kubeadm
-    - kubectl
   tags:
     - kubeadm-install
 
@@ -89,3 +85,15 @@
     enabled: yes
   tags:
     - kubeadm-install
+
+- name: "Redhat | Open default ports"
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    zone: public
+    immediate: yes
+    state: enabled
+  with_items:
+    - "{{ kubeadm_default_ports }}"
+  tags:
+    - kubeadm-cluster-setup

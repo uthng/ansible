@@ -48,7 +48,7 @@ Vagrant.configure(2) do |config|
           # Set limit to all for ansble being to able to connect
           # to all vms at the same time
           ansible.limit = "all"
-          ansible.verbose = "v"
+          ansible.verbose = "vvvvv"
           ansible.playbook = "k8s_setup.yml"
           ansible.groups = {
             "k8s" => ["k8s-01", "k8s-02"],

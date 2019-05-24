@@ -31,24 +31,24 @@
   tags:
     - docker-install
 
-#- name: Install ssh key
-  #hosts: "{{ k8s }}"
-  #become: yes
-  #tasks:
-    #- file:
-        #path: "{{ ansible_env.HOME }}/.ssh"
-        #state: directory
+- name: Install ssh key
+  hosts: "k8s"
+  become: yes
+  tasks:
+    - file:
+        path: "{{ ansible_env.HOME }}/.ssh"
+        state: directory
 
-    #- name: Add authorized key
-      #authorized_key:
-        #user: "{{ ansible_env.USER }}"
-        #state: present
-        #key: "{{ lookup('file', '/data/Projets/VP/ssh-keys/ssh_servers.pub') }}"
-    #- name: Copy ssh private key
-      #copy:
-        #src: /data/Projets/VP/ssh-keys/ssh_servers
-        #dest: "{{ ansible_env.HOME }}/.ssh/id_rsa"
-        #mode: 0600
+    - name: Add authorized key
+      authorized_key:
+        user: "{{ ansible_env.USER }}"
+        state: present
+        key: "{{ lookup('file', '/Users/thanhnguyen/.ssh/ditto_servers.pub') }}"
+    - name: Copy ssh private key
+      copy:
+        src: /Users/thanhnguyen/.ssh/ditto_servers
+        dest: "{{ ansible_env.HOME }}/.ssh/id_rsa"
+        mode: 0600
 
   #tags:
     #- sshkey-install

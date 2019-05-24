@@ -1,6 +1,6 @@
 # vim:ft=ansible:
 - name: Prepare hosts
-  hosts: "{{ hosts }}"
+  hosts: "has"
   user: root
   become: yes
   roles:
@@ -15,7 +15,7 @@
 
 
 - name: Install and configure docker engine and docker-compose
-  hosts: "{{ hosts }}"
+  hosts: "has"
   become: yes
   roles:
     - { role: docker }
@@ -27,7 +27,7 @@
       experimental: True
 
 - name: Install Keepalived
-  hosts: "{{ hosts }}"
+  hosts: "has"
   user: root
   become: yes
   roles:
@@ -41,7 +41,7 @@
     - keepalived-install
 
 - name: Install HAProxy
-  hosts: "{{ hosts }}"
+  hosts: "has"
   user: root
   become: yes
   roles:

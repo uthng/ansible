@@ -19,6 +19,62 @@
   tags:
     - kubeadm-cluster-setup
 
+# Prepare necessary variables for join a master or a worker
+# after cluster initialization
+- block:
+  - name: "Check if a master host is given"
+    assert:
+      that:
+        - kubeadm_master_host != ""
+      fail_msg: "You must specify a master host by setting kubeadm_master_host variable"
+
+  - name: "Get cluster join token"
+    include: token.yml
+    run_once: yes
+    delegate_to: "{{ kubeadm_master_host }}"
+    when: (kubeadm_join_token == "" or kubeadm_ca_hash == "") and hostvars[inventory_hostname].node_role == "master"
+
+  # Make use of kubectl on other nodes than master
+  - name: "Create kubeconfig folder"
+    file:
+      path: "{{ ansible_env.HOME }}/.kube"
+      state: directory
+
+  - name: "Copy admin.conf from master host to ansible machine"
+    fetch:
+      src: "{{ kubeadm_kubernetes_dir}}/admin.conf"
+      dest: "/tmp/admin.conf"
+      flat: yes
+    delegate_to: "{{ kubeadm_master_host }}"
+    run_once: yes
+
+  - name: "Copy admin.conf from ansible machine to current node"
+    copy:
+      src: "/tmp/admin.conf"
+      dest: "{{ ansible_env.HOME }}/.kube/config"
+
+  - name: "Chown kube config"
+    file:
+      path: "{{ ansible_env.HOME }}/.kube/config"
+      owner: "{{ ansible_env.USER }}"
+      group: "{{ ansible_env.USER }}"
+      mode: 0755
+  tags:
+    - kubeadm-master-join
+    - kubeadm-worker-join
+
+- name: "Include master playbook"
+  include: "master.yml"
+  when: hostvars[inventory_hostname].node_role == "master"
+  tags:
+    - kubeadmin-master-join
+
+- name: "Include worker playbook"
+  include: "worker.yml"
+  when: hostvars[inventory_hostname].node_role == "worker"
+  tags:
+    - kubeadmin-worker-join
+
 - name: "Include calico playbook"
   include: "calico.yml"
   when: inventory_hostname == kubeadm_master_host and kubeadm_network == "calico"
@@ -30,9 +86,3 @@
   when: kubeadm_network == "flannel"
   tags:
     - kubeadm-flannel-install
-
-- name: "Include worker playbook"
-  include: "worker.yml"
-  when: hostvars[inventory_hostname].node_role == "worker"
-  tags:
-    - kubeadmin-worker-install
