@@ -55,14 +55,28 @@
 # Install packages kubelet kubeadm kubectl
 - name: "Debian | Install packages: kubelet, kubeadm and kubectl"
   apt:
-    name: "{{ item }}"
+    name: "{{ kubeadm_default_packages }}"
     state: latest
     update-cache: yes
     allow_unauthenticated: yes
-  with_items:
-    - kubelet
-    - kubeadm
-    - kubectl
   tags:
     - kubeadm-install
 
+- name: "Debian | Enable kubelet"
+  systemd:
+    name: kubelet
+    enabled: yes
+  tags:
+    - kubeadm-install
+
+- name: "Redhat | Open default ports"
+  ufw:
+    port: "{{ item.split('/')[0] }}"
+    protocol: "{{ item.split('/')[1] }}"
+    rule: allow
+    state: enabled
+  when: kubeadm_firewall_configure
+  with_items:
+    - "{{ kubeadm_firewall_ports }}"
+  tags:
+    - kubeadm-install

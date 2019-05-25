@@ -93,7 +93,8 @@
     zone: public
     immediate: yes
     state: enabled
+  when: kubeadm_firewall_configure
   with_items:
-    - "{{ kubeadm_default_ports }}"
+    - "{{ kubeadm_firewall_ports }}"
   tags:
-    - kubeadm-cluster-setup
+    - kubeadm-install
