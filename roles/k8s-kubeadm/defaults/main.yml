@@ -35,6 +35,13 @@ kubeadm_pki_etcd_client_key: "client-key.pem"
 
 # Set kube join token & ca hash for all nodes: masters & workers
 kubeadm_master_host: ""
+kubeadm_master_certs:
+  - "ca.key"
+  - "ca.crt"
+  - "sa.pub"
+  - "sa.key"
+  - "front-proxy-ca.crt"
+  - "front-proxy-ca.key"
 kubeadm_join_token: ""
 kubeadm_ca_hash: ""
 

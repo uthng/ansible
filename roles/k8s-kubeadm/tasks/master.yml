@@ -17,13 +17,7 @@
     shell: "scp root@{{ kubeadm_master_host_ip }}:{{ kubeadm_pki_dir }}/{{ item }} ./"
     args:
       chdir: "{{ kubeadm_pki_dir }}"
-    with_items:
-      - "ca.key"
-      - "ca.crt"
-      - "sa.pub"
-      - "sa.key"
-      - "front-proxy-ca.crt"
-      - "front-proxy-ca.key"
+    with_items: "{{ kubeadm_master_certs }}"
 
   - name: "Master | Join master control plane"
     shell: "kubeadm join {{ kubeadm_load_balancer_vip }}:6443 --token {{ kubeadm_join_token }} --discovery-token-ca-cert-hash {{ kubeadm_ca_hash }} --experimental-control-plane"
