@@ -26,7 +26,8 @@
     assert:
       that:
         - kubeadm_master_host != ""
-      fail_msg: "You must specify a master host by setting kubeadm_master_host variable"
+        - kubeadm_master_host_address != ""
+      fail_msg: "You must specify a master host by setting kubeadm_master_host and kubeadm_master_host_address variables"
 
   - name: "Get cluster join token"
     include: token.yml

@@ -69,7 +69,7 @@
   tags:
     - kubeadm-install
 
-- name: "Redhat | Open default ports"
+- name: "Debian | Open default ports"
   ufw:
     port: "{{ item.split('/')[0] }}"
     protocol: "{{ item.split('/')[1] }}"

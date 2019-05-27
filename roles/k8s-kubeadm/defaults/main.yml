@@ -5,11 +5,15 @@ kubeadm_os_release: '{{ ansible_distribution_release | lower() }}'
 kubeadm_os_distribution_release: '{{ kubeadm_os_distribution + "-" + kubeadm_os_release }}'
 
 # Kubeadm variables
-kubeadm_interface: "eth0"
+
+# By default, no interface is specified to use ansible_host
+# in the inventory file
+kubeadm_node_interface: ""
 kubeadm_pod_subnet: "192.168.0.0/16"
 
 kubeadm_firewall_configure: false
-kubeadm_firewall_ports: ["6443/tcp", "10250/tcp"]
+kubeadm_firewall_master_ports: ["6443/tcp","2379-2380/tcp", "10250/tcp", "10251/tcp", "10252/tcp", "179/tcp"]
+kubeadm_firewall_worker_ports: ["10250/tcp", "30000-32767/tcp", "179/tcp"]
 
 kubeadm_default_packages: ["kubelet", "kubeadm", "kubectl"]
 
@@ -34,7 +38,13 @@ kubeadm_pki_etcd_client_key: "client-key.pem"
 
 
 # Set kube join token & ca hash for all nodes: masters & workers
+# kubeadm_master_host is a the name of the host in the inventory file
 kubeadm_master_host: ""
+# kubeadm_master_host_address is the address (ip or host) corresponding
+# to kubeadm_master_host. This variable can be the ip address of an interface
+# specified by kubeadm_node_interface or an ip/host specified by user in ansible_host
+# or when playing playbook with tag: kubeadm-worker-join and kubeadm-master-join
+kubeadm_master_host_address: ""
 kubeadm_master_certs:
   - "ca.key"
   - "ca.crt"
@@ -61,8 +71,13 @@ kubeadm_calico_url: "https://docs.projectcalico.org/v3.0/getting-started/kuberne
 kubeadm_flannel_url: "https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
 
 # INTERNAL VARIABLES AUTOMATICALLY COMPUTED
-# Set this variable for designing a host master for installation
-kubeadm_master_etcd_endpoints: "{% set comma = joiner(',') %}{% for host in kubeadm_etcd_servers %}{{ comma()}}https://{{ hostvars[host]['ansible_' + kubeadm_interface]['ipv4']['address'] }}:2379{% endfor %}"
 
-kubeadm_master_host_ip: "{{ hostvars[kubeadm_master_host]['ansible_' + kubeadm_interface]['ipv4']['address'] }}"
+# If kubeadm_node_interface is specified, use ipv4 of this interface.
+# Otherwise, use ipv4 defined in ansible_host in the inventory file
+kubeadm_node_host: "{% if (kubeadm_node_interface != '') %}{{ hostvars[inventory_hostname]['ansible_' + kubeadm_node_interface]['ipv4']['address'] }}{% else %}{{ hostvars[inventory_hostname].ansible_host }}{% endif %}"
+
+# Set this variable for designing a host master for installation
+kubeadm_firewall_ports: "{{ (hostvars[inventory_hostname].node_role == 'master')|ternary(kubeadm_firewall_master_ports, kubeadm_firewall_worker_ports) }}"
+kubeadm_master_etcd_endpoints: "{% set comma = joiner(',') %}{% for host in kubeadm_etcd_servers %}{{ comma()}}https://{{ host }}:2379{% endfor %}"
+
 kubeadm_pod_subnet: "{{ kubeadm_network_podsubnet[kubeadm_network] }}"

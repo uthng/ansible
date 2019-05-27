@@ -15,7 +15,7 @@ networking:
   podSubnet: {{ kubeadm_pod_subnet }}
 apiServer:
   extraArgs:
-    advertise-address: {{ hostvars[inventory_hostname]['ansible_' + kubeadm_interface]['ipv4']['address'] }}
+    advertise-address: {{ kubeadm_node_host }}
     endpoint-reconciler-type: "lease"
   certSANs:
   {% for server in kubeadm_apiserver_cert_sans -%}

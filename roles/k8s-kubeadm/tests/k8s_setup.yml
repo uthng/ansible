@@ -49,9 +49,8 @@
         src: /Users/thanhnguyen/.ssh/ditto_servers
         dest: "{{ ansible_env.HOME }}/.ssh/id_rsa"
         mode: 0600
-
-  #tags:
-    #- sshkey-install
+  tags:
+    - sshkey-install
 
 
 - name: Install etcd
@@ -73,11 +72,13 @@
   roles:
     - { role: k8s-kubeadm }
   vars:
-    kubeadm_interface: "eth1"
+    kubeadm_firewall_configure: true
+    kubeadm_node_interface: "eth1"
     #kubeadm_pod_subnet: "10.244.0.0/16"
-    kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.3"]
+    kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.3", "k8s-01"]
     kubeadm_load_balancer_vip: "172.17.8.3"
-    kubeadm_etcd_servers: "{{ groups['etcd'] }}"
+    #kubeadm_etcd_servers: "{{ groups['etcd'] }}"
+    kubeadm_etcd_servers: ["172.17.8.11"]
     #kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.13","172.17.8.21", "172.17.8.3"]
     #kubeadm_pki_etcd_src: "remote"
     #kubeadm_pki_etcd_src_server: "172.17.8.11"

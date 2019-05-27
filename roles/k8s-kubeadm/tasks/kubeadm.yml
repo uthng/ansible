@@ -40,6 +40,7 @@
 - name: "Kubeadm | Set variables after cluster initialization"
   set_fact:
     kubeadm_master_host: "{{ inventory_hostname }}"
+    kubeadm_master_host_address: "{{ kubeadm_node_host }}"
   run_once: yes
   tags:
     - kubeadm-cluster-setup
