@@ -4,7 +4,7 @@
 
 127.0.0.1  localhost.localdomain  localhost
 {% if hosts_add_default_ipv4 %}
-{{ hostvars[inventory_hostname][hosts_ansible_network_interface][hosts_ip_protocol]['address'] }}  {{ ansible_fqdn }} {{ ansible_hostname }}
+{% if hosts_network_interface != '' %}{{ hostvars[inventory_hostname][hosts_ansible_network_interface][hosts_ip_protocol]['address'] }}{% else %}{{ hostvars[inventory_hostname].ansible_host }}{% endif %} {{ ansible_fqdn }} {{ ansible_hostname }}
 {% endif %}
 {% if hosts_add_basic_ipv6 %}
 
@@ -18,8 +18,8 @@ ff02::2  ip6-allrouters
 {% if hosts_add_ansible_managed_hosts %}
 
 # Entries for Ansible managed hosts
-{% for host in groups['all'] if host != inventory_hostname and hostvars[host][hosts_ansible_network_interface] is defined %}
-{{ hostvars[host][hosts_ansible_network_interface][hosts_ip_protocol]['address'] }} {{ hostvars[host]['ansible_fqdn'] }} {{ hostvars[host]['ansible_hostname'] }}
+{% for host in groups['all'] if host != inventory_hostname %}
+{% if hosts_network_interface != '' %}{{ hostvars[host][hosts_ansible_network_interface][hosts_ip_protocol]['address'] }}{% else %}{{ hostvars[host].ansible_host }}{% endif %} {{ hostvars[host]['ansible_fqdn'] }} {{ hostvars[host]['ansible_hostname'] }}
 {% endfor %}
 {% endif %}
 {% if hosts_entries|length != 0 %}

@@ -22,4 +22,6 @@ hosts_file_snippets: []
 hosts_ip_protocol: 'ipv4'
 
 # Network interface to use
-hosts_network_interface: "{{ ansible_default_ipv4.interface }}"
+# If no interface is specified, use IP/host defined in ansible_host
+# in the inventory file
+hosts_network_interface: ""
