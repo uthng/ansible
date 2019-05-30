@@ -4,7 +4,8 @@
 - name: "Include OS specific variables"
   include_vars: "{{ ansible_os_family|lower }}.yml"
   tags:
-    - always
+    - kubeadm-install
+    - kubeadm-init-env
 
   # Include OS playbook for package installation
 - name: "Include OS package installation"
@@ -36,22 +37,29 @@
     when: (kubeadm_join_token == "" or kubeadm_ca_hash == "") and hostvars[inventory_hostname].node_role == "master"
 
   # Make use of kubectl on other nodes than master
-  - name: "Create kubeconfig folder"
+  - name: "Create kubeconfig folder on remote host"
     file:
       path: "{{ ansible_env.HOME }}/.kube"
+      state: directory
+
+  - name: "Create kubeconfig folder on local host"
+    become: no
+    local_action:
+      module: file
+      path: "$HOME/.kube"
       state: directory
 
   - name: "Copy admin.conf from master host to ansible machine"
     fetch:
       src: "{{ kubeadm_kubernetes_dir}}/admin.conf"
-      dest: "/tmp/admin.conf"
+      dest: "~/.kube/config"
       flat: yes
     delegate_to: "{{ kubeadm_master_host }}"
     run_once: yes
 
   - name: "Copy admin.conf from ansible machine to current node"
     copy:
-      src: "/tmp/admin.conf"
+      src: "~/.kube/config"
       dest: "{{ ansible_env.HOME }}/.kube/config"
 
   - name: "Chown kube config"
@@ -63,6 +71,7 @@
   tags:
     - kubeadm-master-join
     - kubeadm-worker-join
+    - kubeadm-calico-install
 
 - name: "Include master playbook"
   include: "master.yml"
