@@ -1,0 +1,43 @@
+---
+# defaults file for k8s-rbac
+rbac_os_distribution: '{{ ansible_distribution | lower() }'
+rbac_os_release: '{{ ansible_distribution_release | lower() }}'
+rbac_os_distribution_release: '{{ rbac_os_distribution + "-" + rbac_os_release }}'
+
+# Subjects
+# Here we consider that we can apply a role to a subject
+# in several namespaces in condition that there is that role
+# created in that namespace
+# When namespaces is not defined or empty array, the role
+rbac_subjects: []
+
+# Roles (cluster or not)
+# Definition role for several namespaces.
+# When namespaces is not defined or empty array, the role
+# will be considered as a cluster role.
+# "default" namespace must be specified anyway.
+rbac_roles: []
+
+rbac_file: /tmp/rbac.yaml
+
+# GENERATED INTERNAL VARIABLES
+# List of namespaces for Subjects
+rbac_subject_namespaces: "{{ rbac_subjects|selectattr('namespaces', 'defined')|map(attribute='namespaces')|sum(start=[])|unique }}"
+
+# List of namespaces for Role
+rbac_role_namespaces: "{{ rbac_roles|selectattr('namespaces', 'defined')|map(attribute='namespaces')|sum(start=[])|unique }}"
+
+# List of all namespaces
+rbac_namespaces: "{{ (rbac_subject_namespaces + rbac_role_namespaces)|unique }}"
+
+# List of pairs user/namespace
+rbac_subjects_namespaces: "{% set pairs = [] %}{% for sub in rbac_subjects %}{% if sub.namespaces is defined and sub.namespaces|length > 0 %}{% for ns in sub.namespaces %}{{ pairs.append({'name': sub.name , 'namespace': ns, 'type': sub.type, 'role': sub.role}) }}{% endfor %}{% else %}{{ pairs.append({'name': sub.name, 'type': sub.type, 'role': sub.role}) }}{% endif %}{% endfor %}{{ pairs|unique }}"
+
+# List of pairs role/namespace (role non cluster)
+rbac_roles_namespaces: "{% set pairs = [] %}{% for role in rbac_roles %}{% if role.namespaces is defined and role.namespaces|length > 0 %}{% for ns in role.namespaces %}{{ pairs.append({'name': role.name , 'namespace': ns, 'rules': role.rules}) }}{% endfor %}{% endif %}{% endfor %}{{ pairs|unique }}"
+
+# List of pairs clusterrole/namespace
+rbac_clusterroles_namespaces: "{% set pairs = [] %}{% for role in rbac_roles %}{% if role.namespaces is undefined or role.namespaces|length == 0 %}{{ pairs.append({'name': role.name, 'rules': role.rules}) }}{% endif %}{% endfor %}{{ pairs|unique }}"
+
+# List of subject/role
+rbac_subjects_roles: "{% set pairs = [] %}{% for sub in rbac_subjects_namespaces %}{% if sub.namespace is defined %}{% set user = {'name': sub.name, 'namespace': sub.namespace, 'type': sub.type, 'role': {'name': sub.role.name}} %}{% else %}{% set user = {'name': sub.name, 'type': sub.type, 'role': {'name': sub.role.name}} %}{% endif %}{% if sub.role.namespaces is defined %}{% for rolens in sub.role.namespaces %}{{ pairs.append(user|combine({'role': {'namespace': rolens}}, recursive=True)) }}{% endfor %}{% else %}{{ pairs.append(user) }}{% endif %}{% endfor %}{{ pairs|unique }}"

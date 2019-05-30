@@ -1,0 +1,85 @@
+# {{ ansible_managed }}
+
+####### NAMESPACES #########
+{% for ns in rbac_namespaces %}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ ns }}
+---
+{% endfor %}
+
+####### SUBJECTS ##########
+{% for sub in rbac_subjects_namespaces %}
+{% if sub.type == "service-account" %}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ sub.name }}
+  namespace: {{ sub.namespace }}
+---
+{% endif %}
+{% endfor %}
+
+###### ROLES ##################
+{% for role in rbac_roles_namespaces %}
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ role.name }}
+  namespace: {{ role.namespace }}
+rules: 
+{% for rule in role.rules %}
+  - {{ rule }}
+{% endfor %}
+---
+{% endfor %}
+
+###### CLUSTER ROLES ##################
+{% for role in rbac_clusterroles_namespaces %}
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ role.name }}
+rules: 
+{% for rule in role.rules %}
+  - {{ rule }}
+{% endfor %}
+---
+{% endfor %}
+
+###### ROLE BINDING TO SERVICE ACCOUNT ####################
+{% for sub in rbac_subjects_roles %}
+{% if sub.role.namespace is defined %}
+kind: RoleBinding
+{% else %}
+kind: ClusterRoleBinding
+{% endif %}
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ sub.role.name }}-rolebinding
+{% if sub.role.namespace is defined %}
+  namespace: {{ sub.role.namespace }}
+{% endif %}
+subjects:
+{% if sub.type == 'service-account' %}
+- kind: ServiceAccount
+{% else %}
+- kind: User
+{% endif %}
+  name: {{ sub.name }}
+{% if sub.type == 'service-account' %}
+  namespace: {{ sub.namespace }}
+{% else %}
+  apiGroup: rbac.authorization.k8s.io
+{% endif %}
+roleRef:
+{% if sub.role.namespace is defined %}
+  kind: Role
+{% else %}
+  kind: ClusterRole
+{% endif %}
+  name: {{ sub.role.name }}
+  apiGroup: rbac.authorization.k8s.io
+---
+{% endfor %}
