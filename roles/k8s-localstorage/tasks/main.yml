@@ -1,0 +1,23 @@
+---
+# tasks file for k8s-localstorage
+
+- name: Create all necessary path for PVs
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ ansible_env.USER }}"
+    group: "{{ ansible_env.USER }}"
+    mode: 0755
+  delegate_to: "{{ item.node }}"
+  with_items:
+    - "{{ localstorage_pvs }}"
+
+- name: "Generate local storage manifest"
+  template:
+    src: localstorage.yaml.j2
+    dest: "{{ localstorage_file }}"
+    owner: "{{ ansible_env.USER }}"
+    mode: 0755
+
+- name: "Create local storage resources"
+  shell: "kubectl apply -f {{ localstorage_file }}"

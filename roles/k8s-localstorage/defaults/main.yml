@@ -1,0 +1,24 @@
+---
+# defaults file for k8s-localstorage
+
+# List of Persistent Volume to create
+# localstorage_pvs:
+#   - name: k8s0-data
+#     node: k8s0
+#     path: /data
+#     size: 1Gi
+#     volumeMode: Filesystem
+#     accessModes: ["ReadWriteOnce"]
+#     policy: Delete
+#   - name: k8s1-data
+#     node: k8s1
+#     path: /data
+#     size: 30Gi
+#     volumeMode: Filesystem
+#     accessModes: ["ReadWriteOnce"]
+#     policy: Retain
+localstorage_pvs: []
+
+localstorage_file: /tmp/localstorage.yaml
+
+# INTERNAL COMPUTED VARIABLES
