@@ -14,10 +14,10 @@ TimeoutStartSec=0
 
 ExecStart=/usr/local/bin/etcd --name {{ inventory_hostname }} \
     --data-dir {{ etcd_host_data_dir }} \
-    --listen-client-urls https://{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}:2379 \
-    --advertise-client-urls https://{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}:2379 \
-    --listen-peer-urls https://{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}:2380 \
-    --initial-advertise-peer-urls https://{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}:2380 \
+    --listen-client-urls https://0.0.0.0:2379 \
+    --advertise-client-urls https://{{ etcd_node_host }}:2379 \
+    --listen-peer-urls https://0.0.0.0:2380 \
+    --initial-advertise-peer-urls https://{{ etcd_node_host }}:2380 \
     --cert-file={{ etcd_host_cert_dir }}/server.pem \
     --key-file={{ etcd_host_cert_dir }}/server-key.pem \
     --client-cert-auth \

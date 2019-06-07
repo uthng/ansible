@@ -1,7 +1,7 @@
 {
     "CN": "{{ ansible_hostname }}",
     "hosts": [
-        "{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}",
+        "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}",
         "{{ hostvars[inventory_hostname].ansible_host }}",
         "{{ ansible_hostname }}"
     ],

@@ -15,7 +15,7 @@ etcd_archive: "etcd-{{ etcd_version }}-linux-amd64.tar.gz"
 # 2 types: docker or systemd (considered as external etcd cluster)
 etcd_download_url: "https://github.com/coreos/etcd/releases/download/{{ etcd_version }}/{{ etcd_archive }}"
 
-etcd_interface: "eth0"
+etcd_interface: ""
 
 etcd_ssh_key_generated: False
 etcd_tls_enabled: True
@@ -30,4 +30,8 @@ etcd_host_data_dir: "/data/etcd"
 etcd_initial_cluster_token: "my-etcd-token"
 etcd_initial_cluster_state: "new"
 
-etcd_initial_cluster: "{% set comma = joiner(',') %}{% for host in groups[etcd_inventory_group] %}{{ comma() }}{{ host }}=https://{{ hostvars[host]['ansible_' + etcd_interface]['ipv4']['address'] }}:2380{% endfor %}"
+
+# INTERNAL COMPUTED VARIBALES
+etcd_node_host: "{% if (etcd_interface != '') %}{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}{% else %}{{ hostvars[inventory_hostname].ansible_host }}{% endif %}"
+
+etcd_initial_cluster: "{% set comma = joiner(',') %}{% for host in groups[etcd_inventory_group] %}{{ comma() }}{{ host }}=https://{% if (etcd_interface != '') %}{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}{% else %}{{ hostvars[inventory_hostname].ansible_host }}{% endif %}:2380{% endfor %}"
