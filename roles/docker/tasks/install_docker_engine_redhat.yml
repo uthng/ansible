@@ -56,7 +56,7 @@
 # Remove old docker packages
 - name: "RedHat | Remove old docker packages"
   yum:
-    name: "['docker-ce', 'docker-client', 'docker-client-latest', 'docker-common', 'docker-latest', 'docker-latest-logrotate', 'docker-logrotate', 'docker-engine']"
+    name: "{{ docker_old_packages }}"
     state: absent
   when: docker_install_engine
   ignore_errors: yes
@@ -65,7 +65,7 @@
 
 - name: "Redhat | Install necessary packages"
   yum:
-    name: "['{{ docker_package }}', 'docker-ce-cli', 'containerd.io', 'python-pip']"
+    name: "{{ docker_necessary_packages }}"
     state: present
   when: docker_install_engine
   notify: docker start
@@ -76,23 +76,45 @@
   systemd:
     name: docker
     enabled: yes
-  tags:
-    - docker-engine-install
-
-  # Install pip
-- name: "Redhat | Update PIP package"
-  pip:
-    name: pip
-    state: latest
   when: docker_install_engine
   tags:
     - docker-engine-install
 
-- name: "Redhat | Install docker-py package"
-  pip:
-    name: docker-py
-    state: present
+# Install pip
+#- name: "Redhat | Update PIP package"
+  #pip:
+    #name: pip
+    #state: latest
+  #when: docker_install_engine
+  #tags:
+    #- docker-engine-install
+
+#- name: "Redhat | Update PIP package"
+  #pip:
+    #name: pip
+    #state: latest
+  #when: docker_install_engine
+  #tags:
+    #- docker-engine-install
+
+#- name: "Redhat | Install docker-py package"
+  #pip:
+    #name: docker-py
+    #state: present
+  #when: docker_install_engine
+  #tags:
+    #- docker-engine-install
+
+ #Install pip packages by enabling pip 
+ #with SCL (Redhat Software Collection) for normal user
+- name: "Redhat | Update pip with SCL"
+  shell: "scl enable python27 -- pip install --upgrade pip"
   when: docker_install_engine
   tags:
     - docker-engine-install
 
+- name: "Redhat | Install docker-py with SCLE"
+  shell: "scl enable python27 -- pip install docker-py"
+  when: docker_install_engine
+  tags:
+    - docker-engine-install

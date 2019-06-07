@@ -1,2 +1,4 @@
 docker_key_url: 'https://download.docker.com/linux/centos/gpg'
 docker_repo_url: 'https://download.docker.com/linux/{{ (ansible_distribution == "Fedora") | ternary("fedora","centos") }}/docker-ce.repo'
+docker_old_packages: "['docker-ce', 'docker-client', 'docker-client-latest', 'docker-common', 'docker-latest', 'docker-latest-logrotate', 'docker-logrotate', 'docker-engine']"
+docker_necessary_packages: "['{{ docker_package }}', 'docker-ce-cli', 'containerd.io', 'python27-python-pip']"
