@@ -127,5 +127,4 @@
     mode: 0755
 
 - name: "Create RBAC resources"
-  shell: "kubectl create -f {{ rbac_file }}"
-
+  shell: "kubectl apply -f {{ rbac_file }}"
