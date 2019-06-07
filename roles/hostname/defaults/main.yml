@@ -10,4 +10,4 @@ hostname_newhost: "{{ inventory_hostname }}"
 hostname_eth_interface: eth0
 
 hostname_set_ip: False
-hostname_ip: "{% if hostname_set_ip %}{{ hostvars[inventory_hostname]['ansible_' + hostname_eth_interface]['ipv4']['address'] }}{% else%}127.0.1.1{% endif %}"
+hostname_ip: "{% if hostname_set_ip %}{% if hosts_network_interface != '' %}{{ hostvars[inventory_hostname]['ansible_' + hostname_eth_interface]['ipv4']['address'] }}{% else %}{{ hostvars[inventory_hostname].ansible_host }}{% endif %}{% else%}127.0.1.1{% endif %}"
