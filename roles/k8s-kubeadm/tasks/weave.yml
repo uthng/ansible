@@ -1,0 +1,5 @@
+- name: "Weave | Install weave from manifest"
+  shell: "kubectl apply -f {{ kubeadm_weave_url }}"
+  when: inventory_hostname == kubeadm_master_host
+  tags:
+    - kubeadm-weave-install

@@ -12,8 +12,8 @@ kubeadm_node_interface: ""
 kubeadm_pod_subnet: "192.168.0.0/16"
 
 kubeadm_firewall_configure: false
-kubeadm_firewall_master_ports: ["6443/tcp","2379-2380/tcp", "10250/tcp", "10251/tcp", "10252/tcp", "179/tcp"]
-kubeadm_firewall_worker_ports: ["10250/tcp", "30000-32767/tcp", "179/tcp"]
+kubeadm_firewall_master_ports: ["6443/tcp","2379-2380/tcp", "10250/tcp", "10251/tcp", "10252/tcp", "179/tcp", "80/tcp", "8080/tcp", "6783/tcp", "6783-6784/udp"]
+kubeadm_firewall_worker_ports: ["10250/tcp", "30000-32767/tcp", "179/tcp", "80/tcp", "8080/tcp", "53/tcp", "53/udp", "6783/tcp", "6783-6784/udp" ]
 
 kubeadm_default_packages: ["kubelet", "kubeadm", "kubectl"]
 
@@ -63,12 +63,16 @@ kubeadm_network: "calico"
 kubeadm_network_podsubnet:
   calico: "192.169.0.0/16"
   flannel: "10.244.0.0/16"
+  weave: "10.32.0.0/12"
 
 # CALICO
 kubeadm_calico_url: "https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/calico.yaml"
 
 # FLANNEL
 kubeadm_flannel_url: "https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
+
+# WEAVE
+kubeadm_weave_url: "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
 # INTERNAL VARIABLES AUTOMATICALLY COMPUTED
 

@@ -30,12 +30,6 @@
         - kubeadm_master_host_address != ""
       fail_msg: "You must specify a master host by setting kubeadm_master_host and kubeadm_master_host_address variables"
 
-  - name: "Get cluster join token"
-    include: token.yml
-    run_once: yes
-    delegate_to: "{{ kubeadm_master_host }}"
-    when: (kubeadm_join_token == "" or kubeadm_ca_hash == "") and hostvars[inventory_hostname].node_role == "master"
-
   # Make use of kubectl on other nodes than master
   - name: "Create kubeconfig folder on remote host"
     file:
@@ -68,22 +62,19 @@
       owner: "{{ ansible_env.USER }}"
       group: "{{ ansible_env.USER }}"
       mode: 0755
+
+  - name: "Get cluster join token"
+    include: token.yml
+    run_once: yes
+    delegate_to: "{{ kubeadm_master_host }}"
+    when: (kubeadm_join_token == "" or kubeadm_ca_hash == "") and hostvars[inventory_hostname].node_role == "master"
+
   tags:
     - kubeadm-master-join
     - kubeadm-worker-join
     - kubeadm-calico-install
-
-- name: "Include master playbook"
-  include: "master.yml"
-  when: hostvars[inventory_hostname].node_role == "master"
-  tags:
-    - kubeadmin-master-join
-
-- name: "Include worker playbook"
-  include: "worker.yml"
-  when: hostvars[inventory_hostname].node_role == "worker"
-  tags:
-    - kubeadmin-worker-join
+    - kubeadm-flannel-install
+    - kubeadm-weave-install
 
 - name: "Include calico playbook"
   include: "calico.yml"
@@ -96,3 +87,21 @@
   when: kubeadm_network == "flannel"
   tags:
     - kubeadm-flannel-install
+
+- name: "Include weave playbook"
+  include: "weave.yml"
+  when: kubeadm_network == "weave"
+  tags:
+    - kubeadm-weave-install
+
+- name: "Include master playbook"
+  include: "master.yml"
+  when: hostvars[inventory_hostname].node_role == "master"
+  tags:
+    - kubeadm-master-join
+
+- name: "Include worker playbook"
+  include: "worker.yml"
+  when: hostvars[inventory_hostname].node_role == "worker"
+  tags:
+    - kubeadm-worker-join

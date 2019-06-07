@@ -1,2 +1,5 @@
 ---
 # handlers file for k8s-kubeadm
+
+- name: apply sysctl rules
+  shell: sysctl --system
