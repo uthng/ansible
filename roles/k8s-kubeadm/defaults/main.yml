@@ -32,10 +32,10 @@ kubeadm_load_balancer_vip: ""
 #kubeadm_pki_etcd_src_server: ""
 #kubeadm_pki_etcd_src_dir: ""
 kubeadm_pki_etcd_dir: "/etc/kubernetes/pki/etcd"
-kubeadm_pki_etcd_ca: "ca.pem"
-kubeadm_pki_etcd_client: "client.pem"
-kubeadm_pki_etcd_client_key: "client-key.pem"
-
+kubeadm_pki_etcd_certs:
+  - ca.pem
+  - client.pem
+  - client-key.pem
 
 # Set kube join token & ca hash for all nodes: masters & workers
 # kubeadm_master_host is a the name of the host in the inventory file

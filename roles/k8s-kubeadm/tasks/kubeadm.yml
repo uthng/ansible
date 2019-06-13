@@ -1,22 +1,17 @@
 - name: "Kubeadm | Copy etcd certificates from local"
   copy:
-    src: "{{ item }}"
+    src: "{{ kubeadm_pki_etcd_src_dir }}/{{ item }}"
     dest: "{{ kubeadm_pki_etcd_dir }}"
+    remote_src: yes
     mode: 0644
-  with_items:
-    - "{{ kubeadm_pki_etcd_ca }}"
-    - "{{ kubeadm_pki_etcd_client }}"
-    - "{{ kubeadm_pki_etcd_client_key }}"
+  with_items: "{{ kubeadm_pki_etcd_certs }}"
   when: kubeadm_pki_etcd_src is defined and kubeadm_pki_etcd_src == "local"
   tags:
     - kubeadm-cluster-setup
 
 - name: "Kubeadm | Copy etcd certificates from remote etcd server"
   shell: "scp root@{{ kubeadm_pki_etcd_src_server }}:{{ kubeadm_pki_etcd_src_dir }}/{{ item }} {{ kubeadm_pki_etcd_dir }}"
-  with_items:
-    - "{{ kubeadm_pki_etcd_ca }}"
-    - "{{ kubeadm_pki_etcd_client }}"
-    - "{{ kubeadm_pki_etcd_client_key }}"
+  with_items: "{{ kubeadm_pki_etcd_certs }}"
   when: kubeadm_pki_etcd_src is defined and kubeadm_pki_etcd_src == "remote"
   tags:
     - kubeadm-cluster-setup
