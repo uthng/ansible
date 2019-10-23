@@ -34,4 +34,4 @@ etcd_initial_cluster_state: "new"
 # INTERNAL COMPUTED VARIBALES
 etcd_node_host: "{% if (etcd_interface != '') %}{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}{% else %}{{ hostvars[inventory_hostname].ansible_host }}{% endif %}"
 
-etcd_initial_cluster: "{% set comma = joiner(',') %}{% for host in groups[etcd_inventory_group] %}{{ comma() }}{{ host }}=https://{% if (etcd_interface != '') %}{{ hostvars[inventory_hostname]['ansible_' + etcd_interface]['ipv4']['address'] }}{% else %}{{ hostvars[inventory_hostname].ansible_host }}{% endif %}:2380{% endfor %}"
+etcd_initial_cluster: "{% set comma = joiner(',') %}{% for host in groups[etcd_inventory_group] %}{{ comma() }}{{ host }}=https://{% if (etcd_interface != '') %}{{ hostvars[host]['ansible_' + etcd_interface]['ipv4']['address'] }}{% else %}{{ hostvars[host].ansible_host }}{% endif %}:2380{% endfor %}"
