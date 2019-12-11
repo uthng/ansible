@@ -1,0 +1,78 @@
+---
+# File: tasks/install.yml - package installation tasks for Consul
+- name: Add consul group
+  group:
+    name: "{{ consul_group }}"
+    state: present
+
+- name: Add Consul user
+  user:
+    name: "{{ consul_user }}"
+    comment: "Consul user"
+    group: "{{ consul_group }}"
+    system: yes
+
+- name: Check if Consul archive already is downloaded
+  become: no
+  connection: local
+  stat:
+    path: "/tmp/{{ consul_archive }}"
+  run_once: true
+  register: consul_package
+  tags:
+    - consul-install
+
+- name: Download Consul
+  become: no
+  connection: local
+  get_url:
+    url: "{{ consul_zip_url }}"
+    dest: "/tmp/{{ consul_archive }}"
+  run_once: true
+  when: consul_package.stat.exists == False
+  tags:
+    - consul-install
+
+- name: Create temporarily folder for unarchiving consul
+  become: no
+  connection: local
+  file:
+    path: "/tmp/consul"
+    state: directory
+  tags:
+    - consul-install
+
+- name: Unarchive Consul
+  become: no
+  connection: local
+  unarchive:
+    src: "/tmp/{{ consul_archive }}"
+    dest: "/tmp/consul"
+    creates: "/tmp/consul/consul"
+  run_once: true
+  tags:
+    - consul-install
+
+- name: Install Consul
+  copy:
+    src: "/tmp/consul/consul"
+    dest: "{{ consul_bin_path }}/consul"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: 0755
+  tags:
+    - consul-install
+
+- name: Cleanup
+  become: no
+  connection: local
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob: "/tmp/consul"
+  run_once: true
+  tags:
+    - consul-install
+
+
+

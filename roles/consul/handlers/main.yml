@@ -1,0 +1,18 @@
+---
+# handlers file for docker-consul
+- name: restart consul
+  service:
+    name: consul
+    state: restarted
+
+- name: start consul
+  service:
+    name: consul
+    enabled: yes
+    state: started
+
+- name: reload consul
+  service:
+    name: consul
+    state: reloaded
+

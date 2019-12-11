@@ -1,0 +1,41 @@
+- name: Get consul node health state
+  uri:
+    url: http://localhost:8500/v1/health/state/any
+    method: GET
+    status_code: 200
+    return_content: yes
+  register: health_response
+  run_once: true
+  ignore_errors: true
+  tags:
+    - consul-bootstrap-remove
+
+- name: Debug health check
+  debug:
+    msg: "{{ health_response.json|map(attribute='Status')|unique|list }}"
+  when: health_response.json is defined
+  tags:
+    - consul-bootstrap-remove
+
+- name: Set health result
+  set_fact:
+    health_result: "{{ health_response.json|map(attribute='Status')|unique|list}}"
+  when: health_response.json is defined
+  tags:
+    - consul-bootstrap-remove
+
+- name: "Configure systemd in case of consul server"
+  template:
+    src: consul_systemd.service.j2
+    dest: /lib/systemd/system/consul.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload consul
+    - restart consul
+
+  when: health_response.json is defined and health_result|length == 1 and health_result[0] == 'passing'
+  tags:
+    - consul-bootstrap-remove
+

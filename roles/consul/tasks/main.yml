@@ -1,0 +1,201 @@
+---
+# tasks file for docker-consul
+- name: Fail if both Dnsmasq and iptables are enabled
+  fail:
+    msg: "EONEORTHEOTHER: DNSmasq and iptables together is not supported."
+  when: consul_dnsmasq_enable and consul_iptables_enable
+  tags:
+    - consul-install
+    - consul-configure
+
+- name: Fail if iptables is enabled but no recursors are defined
+  fail:
+    msg: "Recursors are required if iptables is enabled."
+  when: consul_iptables_enable and consul_recursors|length == 0
+  tags:
+    - consul-install
+    - consul-configure
+
+# Check if the cluster is boostrapped
+- name: Check bootstrapped state
+  stat:
+    path: "{{ consul_config_path}}/.consul_bootstrapped"
+  register: bootstrap_marker
+  ignore_errors: true
+  tags:
+    - consul-install
+    - consul-configure
+
+# Include installation of consul binary & systemd
+- include: install.yml
+  tags:
+    - consul-install
+
+- name: Create directories
+  file:
+    dest: "{{ item }}"
+    state: directory
+    mode: 0777
+  with_items:
+    - "{{ consul_data_path }}"
+    - "{{ consul_log_path }}"
+    - "{{ consul_config_path }}"
+    - "{{ consul_config_path }}/bootstrap"
+    - "{{ consul_config_path }}/client"
+    - "{{ consul_config_path }}/server"
+  when: not bootstrap_marker.stat.exists
+  tags:
+    - consul-configure
+
+# if the cluster is bootstrapped, just get the encrypt key
+- block:
+    - name: Check for key on previously boostrapped server
+      slurp:
+        src: "{{ consul_config_path }}/bootstrap/config.json"
+      register: consul_config_b64
+      run_once: true
+      ignore_errors: yes
+
+    - name: Deserialize existing config
+      set_fact:
+        consul_config: "{{ consul_config_b64.content | b64decode | from_json }}"
+      run_once: true
+      when: consul_config_b64.content is defined
+
+    - name: Save encryption key (from existing config)
+      set_fact:
+        consul_raw_key: "{{ consul_config.encrypt }}"
+      run_once: true
+      when: consul_config is defined
+
+  no_log: true
+  when: consul_raw_key is not defined and bootstrap_marker.stat.exists and (node_role == "bootstrap" or node_role == "server")
+  tags:
+    - consul-configure
+
+- name: Write key locally to share with new servers
+  local_action: copy content="{{ consul_raw_key }}" dest=/tmp/consul_raw.key
+  become: no
+  when: consul_raw_key is defined and bootstrap_marker.stat.exists
+  tags:
+    - consul-configure
+
+- name: Read key for servers that require it
+  set_fact:
+    consul_raw_key: "{{ lookup('file', '/tmp/consul_raw.key') }}"
+  when: consul_raw_key is not defined and bootstrap_marker.stat.exists
+  tags:
+    - consul-configure
+
+- name: Deleting key file
+  local_action: file path=/tmp/consul_raw.key state=absent
+  become: no
+  when: consul_raw_key is defined and bootstrap_marker.stat.exists
+  tags:
+    - consul-configure
+
+# Generate consul gossip encryption key if consul_raw_key does not exist
+# using consul docker container
+- block:
+    - name: Generate gossip encryption key
+      shell: "docker run --rm consul keygen"
+      register: consul_keygen
+      run_once: true
+
+    - name: Save encryption key
+      set_fact: consul_raw_key={{ consul_keygen.stdout }}
+  when: consul_raw_key is not defined and not bootstrap_marker.stat.exists
+
+- name: Select Consul network interface for Linux
+  set_fact:
+    consul_bind_address: "{{ hostvars[inventory_hostname]['ansible_'+ consul_iface ]['ipv4']['address'] }}"
+  when: ansible_os_family == "Linux"
+
+- name: Bootstrap configuration
+  template:
+    src: config_bootstrap.json.j2
+    dest: "{{ consul_config_path }}/bootstrap/config.json"
+    mode: 0777
+
+- name: Client configuration
+  template:
+    src: config_client.json.j2
+    dest: "{{ consul_config_path }}/client/config.json"
+    mode: 0777
+
+- name: Server configuration
+  template:
+    src: config_server.json.j2
+    dest: "{{ consul_config_path }}/server/config.json"
+    mode: 0777
+
+- include: acl.yml
+  when: consul_acl_enable
+  tags:
+    - consul-acl-configure
+
+# Relaunch simply all nodes in the case of already bootstrapped
+- block:
+  - name: "Configure systemd in case of already bootstrapped"
+    template:
+      src: consul_systemd.service.j2
+      dest: /lib/systemd/system/consul.service
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - reload consul
+      - restart consul
+
+  when: (bootstrap_marker.stat.exists) or (consul_raw_key is defined and consul_raw_key != "" and node_role == "client")
+  tags:
+    - consul-configure
+
+# Install and launch consul in the case of not bootstrapped
+- block:
+
+  #- include: ../tasks/tls.yml
+    #when: consul_tls_enable
+  - name: "Configure systemd in case of already bootstrapped"
+    template:
+      src: consul_systemd.service.j2
+      dest: /lib/systemd/system/consul.service
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - reload consul
+      - restart consul
+
+  - name: Consul HTTP API reachable?
+    wait_for:
+      delay: 15
+      port: 8500
+
+  - name: Create bootstrapped marker
+    file:
+      dest: "{{ consul_config_path }}/.consul_bootstrapped"
+      state: touch
+
+  #- include: ../tasks/dnsmasq.yml
+    #when: consul_dnsmasq_enable
+
+  #- include: ../tasks/iptables.yml
+    #when: consul_iptables_enable
+
+  #- include: ../tasks/client.yml
+    #when: node_role == "client" and ansible_os_family == "Debian"
+
+  #- include: remove_boostrap.yml
+    #when: node_role == "boostrap"
+    #tags:
+      #- bootstrap-remove
+  when: not bootstrap_marker.stat.exists and node_role != "client"
+  tags:
+    - consul-configure
+
+- include: remove_boostrap.yml
+  when: node_role == "bootstrap"
+  tags:
+    - consul-bootstrap-remove
+
