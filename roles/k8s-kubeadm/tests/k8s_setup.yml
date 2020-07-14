@@ -76,7 +76,8 @@
     kubeadm_node_interface: "eth1"
     #kubeadm_pod_subnet: "10.244.0.0/16"
     kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.3", "k8s-01"]
-    kubeadm_load_balancer_vip: "172.17.8.3"
+    kubeadm_load_balancer_vip: "172.17.8.11"
+    #kubeadm_load_balancer_vip: "172.17.8.3"
     #kubeadm_etcd_servers: "{{ groups['etcd'] }}"
     kubeadm_etcd_servers: ["172.17.8.11"]
     #kubeadm_apiserver_cert_sans: ["172.17.8.11", "172.17.8.13","172.17.8.21", "172.17.8.3"]
